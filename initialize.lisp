@@ -7,6 +7,8 @@
 
 (defun initialize ()
   (setf hunchentoot:*catch-errors-p* nil)
+  (ensure-directories-exist (now-file "logs/"))
   (start-session)
   (build)
+  (update-events)
   (start-now))
