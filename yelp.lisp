@@ -11,12 +11,12 @@
                         ~@[br_lat=~A&~]~@[br_long=~A&~]~@[location=~A&~]~
                         ~@[radius=~A&~]~@[num_biz_requested=~A&~]~
                         ~@[category=~A&~]ywsid=~A"
-                    (url-encode term) lat lon
+                    (and term (url-encode term)) lat lon
                     (when box (first box))
                     (when box (second box))
                     (when box (third box))
                     (when box (fourth box))
-                    (url-encode location)
+                    (and location (url-encode location))
                     radius number category *yelp-id*))))
      (if (stringp raw) raw (babel:octets-to-string raw)))))
 
@@ -34,3 +34,4 @@
       (deck:set-fields place `(("latitude" ,(cdr (assoc :latitude hit)))
                                ("longitude" ,(cdr (assoc :longitude hit)))
                                ("notes" ,hit))))))
+

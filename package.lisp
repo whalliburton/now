@@ -8,7 +8,8 @@
                 *catch-errors-p* url-encode)
   (:import-from local-time now decode-timestamp encode-timestamp format-timestring)
   (:import-from split-sequence split-sequence)
-  (:import-from helpers breakout symb princ-with-ellipses-to-string random-string)
+  (:import-from helpers breakout symb princ-with-ellipses-to-string random-string
+                parse-float)
   (:import-from drakma http-request)
   (:import-from helpers print-table princ-with-ellipses-to-string)
   (:import-from deck-client field-value template-is-type-of template-id)

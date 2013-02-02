@@ -296,18 +296,44 @@
          (remove-node *dialog*)
          (setf *dialog* nil)))
 
-     (defun mapto (id lat lon name)
-       (let* ((latlon (new ((@ google maps *lat-lng ) lat lon)))
+     (defvar *marker* nil)
+     (defvar *map* nil)
+
+     (defun latlng (lat lng)
+       (return (new ((@ google maps *lat-lng ) lat lng))))
+
+     (defun mapto (id lat lng zoom name)
+       (let* ((latlng (latlng lat lng))
               (map (new ((@ google maps *map)
                          (get-by-id id)
-                         (create :center latlon
-                                 :zoom 8
+                         (create :center latlng
+                                 :zoom zoom
                                  :map-type-id (@ google maps *map-type-id *r-o-a-d-m-a-p)))))
               (marker
                 (new ((@ google maps *marker)
-                      (create :position latlon
+                      (create :position latlng
                               :map map
-                              :title name))))))))))
+                              :title name)))))
+         ;; ((@ google maps event add-listener) marker "click"
+         ;;  (lambda () ((@ marker set-map) nil)))
+         (setf *map* map *marker* marker)
+         ((@ google maps event add-listener) map "click"
+          (lambda (event)
+            (request "set-map-position" (create :lat (slot-value (@ event lat-lng) '*ya)
+                                                :lng (slot-value (@ event lat-lng) '*za)))))))
+
+     (defun move-map (lat lng)
+       ((@ *map* set-center) (latlng lat lng)))
+
+     (defun move-marker (lat lng name)
+       ((@ *marker* set-position) (latlng lat lng))
+       ((@ *marker* set-title) name))
+
+     (defun send-new-map-location (el)
+       (request "set-map-location" (create :name (@ el value))))
+
+     (defun set-contents (id body)
+       (set-inner-html (get-by-id id) body)))))
 
 (defun js-file () *js-file*)
 

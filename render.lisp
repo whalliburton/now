@@ -28,7 +28,8 @@
      (id
       (let ((node (deck:get-node (parse-integer id))))
         (htm (:span :class "button"
-                    :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "go(\"/\");" (icon :arrow-up)))
+                    :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "go(\"/\");"
+                    (icon :arrow-up)))
         (htm
          (:div
           :style "padding:30px"
@@ -37,17 +38,24 @@
           (:br)
           (render-node node stream t)))))
      (t
-      (htm
-       (:table
-        (:tr
-         (iter (for name in '("event" "place" "day"))
-               (htm (:td :class "selectable-row" :onclick (format nil "go(\"/?what=~A\");" name)
-                         (esc name) (str "s")))))))
-      (htm
-       (:br)
-       (:table
-        (iter (for node in (deck:search (format nil "demo:~A" (or what "event"))))
-              (render-node node stream))))))))
+      (if (equal what "map")
+        (htm (:span :class "button"
+                    :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "go(\"/\");"
+                    (icon :arrow-up))
+             (:br) (:br)
+             (render-map stream))
+        (htm
+         (:table
+          (:tr
+           (iter (for name in '("event" "place" "day" ("map")))
+                 (let ((template (not (consp name)))
+                       (name (if (consp name) (car name) name)))
+                   (htm (:td :class "selectable-row" :onclick (format nil "go(\"/?what=~A\");" name)
+                             (esc name) (when template (str "s"))))))))
+         (:br)
+         (:table
+          (iter (for node in (deck:search (format nil "demo:~A" (or what "event"))))
+                (render-node node stream)))))))))
 
 (defun render-node (node stream &optional detail)
   (with-html-output (stream)
@@ -67,18 +75,20 @@
             (:event :time)))
     (princ #\space stream)))
 
+(defun mapto (stream name lat lon zoom)
+  (let ((id (random-string 3)))
+    (with-html-output (stream)
+      (htm
+       (:div :id id :style "width:400px;height:400px;")
+       (:script :type "text/javascript"
+                (fmt "mapto(~S,~A,~A,~A,~S);" id lat lon zoom name))))))
+
 (defmethod render ((type (eql :place)) node stream detail)
   (let ((latitude (field-value node "latitude")))
     (with-html-output (stream)
       (if detail
         (when latitude
-          (let ((id (random-string 3)))
-            (htm
-             (:div :id id :style "width:400px;height:400px;")
-             (:script :type "text/javascript"
-                      (fmt "mapto(~S,~A,~A,~S);"
-                           id latitude (field-value node "longitude")
-                           (field-value node "name"))))))
+          (mapto stream (field-value node "name") latitude (field-value node "longitude") 8))
         (progn
           (esc (field-value node "name"))
           (when latitude
@@ -112,3 +122,31 @@
       (:table :style "padding:10px 0px 0px 20px;"
               (iter (for child in children)
                     (render-node child stream))))))
+
+(defun render-map (stream)
+  (with-html-output (stream)
+    (:table
+     (:tr
+      (:td
+       (mapto stream "Merlyn's" 47.658752 -117.41198 18))
+      (:td (:div :id "list"))))
+    (htm
+     (:br)
+     (:input :style "border-width:0px;padding:5px 10px 5px 10px;" :type "text"
+             :onchange "sendNewMapLocation(this);"))))
+
+(defun set-map-position (lat lng)
+  (let ((lat (parse-float lat))
+        (lng (parse-float lng)))
+    (when-let ((near (geocode-latlng lat lng)))
+      (format nil "setContents('list',~S);"
+              (with-html-output-to-string (stream)
+                (:table
+                 (iter (for el in near)
+                       (multiple-value-bind (name lat lng) (decode-geocode el)
+                         (htm (:tr (:td (esc name)) (:td (fmt "~A" lat)) (:td (fmt "~A" lng))))))))))))
+
+(defun set-map-location (name)
+  (when-let (hit (geocode name))
+    (multiple-value-bind (name lat lng) (decode-geocode (car hit))
+      (format nil "moveMap(~A,~A);moveMarker(~A,~A,~S);" lat lng lat lng name))))

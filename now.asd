@@ -11,6 +11,7 @@
                (:file "ical")
                (:file "events")
                (:file "yelp")
+               (:file "geocode")
                (:file "js")
                (:file "initialize"))
   :depends-on (:hunchentoot :deck-client :closure-html :alexandria :iterate :cl-who
