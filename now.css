@@ -71,3 +71,7 @@ td.selectable-row { cursor:pointer; padding:5px 20px 5px 20px;}
 td.selectable-row:hover { background-color:#333; }
 
 span.button:hover { background-color:#333; }
+
+table.maplist { padding:20px; border:1px solid white; }
+
+.maplist tr td {  padding:5px 10px 5px 10px; }

@@ -129,6 +129,7 @@
      (:tr
       (:td
        (mapto stream "Merlyn's" 47.658752 -117.41198 18))
+      (:td :style "width:50px;")
       (:td (:div :id "list"))))
     (htm
      (:br)
@@ -141,7 +142,7 @@
     (when-let ((near (geocode-latlng lat lng)))
       (format nil "setContents('list',~S);"
               (with-html-output-to-string (stream)
-                (:table
+                (:table :class "maplist"
                  (iter (for el in near)
                        (multiple-value-bind (name lat lng) (decode-geocode el)
                          (htm (:tr (:td (esc name)) (:td (fmt "~A" lat)) (:td (fmt "~A" lng))))))))))))
