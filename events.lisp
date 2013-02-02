@@ -111,8 +111,14 @@
   (iter (for event in events)
         (create-event-node event)))
 
+(defun unescape-string (string)
+  (with-output-to-string (stream)
+    (iter (for c in-string string)
+          (unless (char= c #\\)
+            (write-char c stream)))))
+
 (defun ical-summary (ical)
-  (format nil "~{~A~^~%~}" (second (assoc "SUMMARY" ical :test #'string=))))
+  (unescape-string (format nil "~{~A~^~%~}" (second (assoc "SUMMARY" ical :test #'string=)))))
 
 (defun update-events ()
   (create-event-nodes (fetch-events)))

@@ -20,4 +20,17 @@
                     radius number category *yelp-id*))))
      (if (stringp raw) raw (babel:octets-to-string raw)))))
 
+(defun update-places-from-yelp ()
+  (iter (for place in (deck:search "demo:place"))
+        (update-place-from-yelp place)))
 
+(defun update-place-from-yelp (place)
+  (unless (field-value place "latitude")
+    (when-let (hit (second
+                    (assoc
+                     :businesses
+                     (yelp-business-search :location "Missoula, MT" :term (field-value place "name")))))
+      (format t "yelp hit: ~A~%" (field-value place "name"))
+      (deck:set-fields place `(("latitude" ,(cdr (assoc :latitude hit)))
+                               ("longitude" ,(cdr (assoc :longitude hit)))
+                               ("notes" ,hit))))))

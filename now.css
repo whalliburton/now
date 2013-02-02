@@ -1,5 +1,6 @@
 
 @font-face{font-family:"Futura"; src:url("/futura.ttf") format("truetype");}
+@font-face{font-family:"FontAwesome"; src:url("/fontawesome-webfont.ttf") format("truetype");}
 
 table.paragraph { padding: 0px 0px 0px 0px; }
 
@@ -67,4 +68,6 @@ div.avatars-dialog { border:1px solid white; padding:20px; background-color:blac
 table.avatars { font-size: 32px; padding-bottom:30px; }
 
 td.selectable-row { cursor:pointer; padding:5px 20px 5px 20px;}
-td.selectable-row:hover { background-color:#111; }
+td.selectable-row:hover { background-color:#333; }
+
+span.button:hover { background-color:#333; }

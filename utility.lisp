@@ -57,3 +57,8 @@ a vector of octets."
     (cond
       ((zerop digit) (parse-integer string :junk-allowed t))
       (digit (parse-integer (subseq string digit) :junk-allowed t)))))
+
+
+(defmacro eval-always (&body body)
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     ,@body))

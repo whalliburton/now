@@ -17,6 +17,8 @@
           ,(hunchentoot:create-prefix-dispatcher "/a" 'ajax-handler)
           ,(hunchentoot:create-static-file-dispatcher-and-handler "/futura.ttf"
                                                                   (now-file "futura.ttf"))
+          ,(hunchentoot:create-static-file-dispatcher-and-handler "/fontawesome-webfont.ttf"
+                                                                  (now-file "fontawesome-webfont.ttf"))
           ,(hunchentoot:create-prefix-dispatcher "/js/now.js" 'now-js:js-file)
           ,(hunchentoot:create-folder-dispatcher-and-handler "/images/" (now-file "images/"))
           ,(hunchentoot:create-prefix-dispatcher "/favicon.ico" 'favicon-dispatch)

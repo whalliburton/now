@@ -4,6 +4,7 @@
                (:file "package")
                (:file "utility")
                (:file "avatars")
+               (:file "icons")
                (:file "build")
                (:file "serve")
                (:file "render")

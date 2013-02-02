@@ -294,7 +294,20 @@
            (remove-node *backpane*)
            (setf *backpane* nil))
          (remove-node *dialog*)
-         (setf *dialog* nil))))))
+         (setf *dialog* nil)))
+
+     (defun mapto (id lat lon name)
+       (let* ((latlon (new ((@ google maps *lat-lng ) lat lon)))
+              (map (new ((@ google maps *map)
+                         (get-by-id id)
+                         (create :center latlon
+                                 :zoom 8
+                                 :map-type-id (@ google maps *map-type-id *r-o-a-d-m-a-p)))))
+              (marker
+                (new ((@ google maps *marker)
+                      (create :position latlon
+                              :map map
+                              :title name))))))))))
 
 (defun js-file () *js-file*)
 
