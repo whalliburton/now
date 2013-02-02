@@ -339,6 +339,10 @@
        ((@ *marker* set-position) (latlng lat lng))
        ((@ *marker* set-title) name))
 
+     (defun center-on-marker (&optional zoom)
+       ((@ *map* set-center) ((@ *marker* get-position)))
+       (when zoom ((@ *map* set-zoom) zoom)))
+
      (defun send-new-map-location (el)
        (let ((latlng ((@ *marker* get-position))))
          (console latlng)

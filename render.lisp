@@ -127,6 +127,10 @@
   (with-html-output (stream)
     (:table
      (:tr
+      (:td :style "vertical-align:top;padding:5px;"
+       (:span :class "button"
+              :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "centerOnMarker(14);"
+              (icon :map-marker)))
       (:td
        (mapto stream "Merlyn's" 47.658752 -117.41198 18))
       (:td :style "width:50px;")
