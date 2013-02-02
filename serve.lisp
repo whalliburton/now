@@ -64,8 +64,12 @@
            (show-avatars-dialog))
           ((string-equal command "set-map-position")
            (apply #'set-map-position (with-args :lat :lng)))
+          ((string-equal command "set-map-drag-position")
+           (apply #'set-map-drag-position (with-args :bounds)))
           ((string-equal command "set-map-location")
-           (apply #'set-map-location (with-args :name :bounds))))))))
+           (apply #'set-map-location (with-args :name :bounds)))
+          ((string-equal command "select-maplist")
+           (apply #'select-maplist (with-args :name :lat :lng))))))))
 
 (defun add-comment (draft target-id text)
   (when (plusp (length text))

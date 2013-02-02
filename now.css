@@ -72,6 +72,9 @@ td.selectable-row:hover { background-color:#333; }
 
 span.button:hover { background-color:#333; }
 
-table.maplist { padding:20px; border:1px solid white; }
+table.maplist { border-collapse:collapse;}
 
-.maplist tr td {  padding:5px 10px 5px 10px; }
+.maplist tr td {  padding:10px 15px 10px 15px; }
+
+tr.selectable { cursor:pointer; }
+tr.selectable:hover { background-color:#333; }

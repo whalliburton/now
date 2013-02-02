@@ -47,14 +47,14 @@
         (htm
          (:table
           (:tr
-           (iter (for name in '("event" "place" "day" ("map")))
+           (iter (for name in '("place" "event" "day" ("map")))
                  (let ((template (not (consp name)))
                        (name (if (consp name) (car name) name)))
                    (htm (:td :class "selectable-row" :onclick (format nil "go(\"/?what=~A\");" name)
                              (esc name) (when template (str "s"))))))))
          (:br)
          (:table
-          (iter (for node in (deck:search (format nil "demo:~A" (or what "event"))))
+          (iter (for node in (deck:search (format nil "demo:~A" (or what "place"))))
                 (render-node node stream)))))))))
 
 (defun render-node (node stream &optional detail)
@@ -91,9 +91,10 @@
           (mapto stream (field-value node "name") latitude (field-value node "longitude") 8))
         (progn
           (esc (field-value node "name"))
-          (when latitude
-            (str " ")
-            (icon :star)))))))
+          ;; (when latitude
+          ;;   (str " ")
+          ;;   (icon :star))
+          )))))
 
 (defun event-time-string (event)
   (when-let ((starting (car (second (car (deck:search `((:node :any (:= :id ,(id event))) "starting") :with-edges t))))))
@@ -129,44 +130,94 @@
      (:tr
       (:td :style "vertical-align:top;padding:5px;"
        (:span :class "button"
-              :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "centerOnMarker(14);"
+              :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "centerOnMarker();"
               (icon :map-marker)))
-      (:td
+      (:td :style "vertical-align:top;"
        (mapto stream "Merlyn's" 47.658752 -117.41198 18))
       (:td :style "width:50px;")
-      (:td (:div :id "list"))))
-    (htm
-     (:br)
-     (:input :style "border-width:0px;padding:5px 10px 5px 10px;" :type "text"
-             :onchange "sendNewMapLocation(this);"))))
+      (:td :rowspan 2 (:div :id "list")))
+     (:tr
+      (:td)
+      (:td :style "padding:20px;vertical-align:top;"
+       (:input :style "border-width:0px;padding:5px 10px 5px 10px;width:360px;" :type "text"
+               :onchange "sendNewMapLocation(this);"))))))
+
+(defparameter *local-bounds*
+  '(46.91355420561214 -118.52468281250003 48.3935186680299 -116.32741718750003))
+
+(defun set-maplist (elements)
+  (let* ((sw1 (first *local-bounds*))
+         (sw2 (second *local-bounds*))
+         (ne1 (third *local-bounds*))
+         (ne2 (fourth *local-bounds*))
+         (sorted
+           (iter (for el in elements)
+                 (destructuring-bind (name lat lng &rest rest) el
+                   (declare (ignore name rest))
+                   (if (and (< sw1 lat ne1) (< sw2 lng ne2))
+                     (collect (cons t el) into inside)
+                     (collect (cons nil el) into outside)))
+                 (finally (return (append inside (list nil) outside))))))
+    (format nil "setContents('list',~S);"
+            (with-html-output-to-string (stream)
+              (:table :class "maplist"
+                      (iter (for el in sorted)
+                            (if el
+                              (destructuring-bind (inside name lat lng &rest rest) el
+                                (declare (ignore rest))
+                                (htm (:tr :class "selectable"
+                                          :onclick (format nil "selectMaplist(~S,~A,~A);"
+                                                           (cl-who:escape-string name) lat lng)
+                                          (:td (esc name)) (:td (fmt "~A" lat)) (:td (fmt "~A" lng)))))
+
+                              (htm (:tr (:td :colspan 3 (:hr)))))))))))
 
 (defun set-map-position (lat lng)
   (let ((lat (parse-float lat))
         (lng (parse-float lng)))
     (when-let ((near (geocode-latlng lat lng)))
-      (format nil "setContents('list',~S);"
-              (with-html-output-to-string (stream)
-                (:table :class "maplist"
-                 (iter (for el in near)
-                       (multiple-value-bind (name lat lng) (decode-geocode el)
-                         (htm (:tr (:td (esc name)) (:td (fmt "~A" lat)) (:td (fmt "~A" lng))))))))))))
+      (set-maplist (mapcar #'decode-geocode-list near)))))
 
 (defun set-map-location (name bounds)
-  (destructuring-bind (sw1 sw2 ne1 ne2) (split-sequence #\, (url-decode bounds))
-    (let ((sw1 (parse-float sw1))
-          (sw2 (parse-float sw2))
-          (ne1 (parse-float ne1))
-          (ne2 (parse-float ne2))
-          (hits (geocode name (format nil "~A,~A|~A,~A" sw1 sw2 ne1 ne2)))
-          (yelps (yelp-business-search :box (list ))))
-      (or
-       (iter (for el in hits)
-             (multiple-value-bind (name lat lng) (decode-geocode el)
-               (when (and (< sw1 lat se1) (< sw2 lng se2))
-                 (format t "map hit: ~A ~A ~A~%" name lat lng)
-                 (return (format nil "moveMap(~A,~A,8);moveMarker(~A,~A,~S);" lat lng lat lng name)))))
-       (if hits
-         (progn
-           (format t "No results inside bounds.~%")
-           (mapc #'print-geocode hits))
-         (format t "No map results."))))))
+  (let ((name (string-trim '(#\space) (url-decode name))))
+    (destructuring-bind (sw1 sw2 ne1 ne2) (split-sequence #\, (url-decode bounds))
+      (let ((sw1 (parse-float sw1))
+            (sw2 (parse-float sw2))
+            (ne1 (parse-float ne1))
+            (ne2 (parse-float ne2))
+            (hits (geocode name (format nil "~A,~A|~A,~A" sw1 sw2 ne1 ne2)))
+            (yelps (yelp-business-search :term name :box (list sw1 ne2 ne1 sw2))))
+        (set-maplist
+         (when (or hits yelps)
+           (append
+            (and yelps (decode-yelps yelps))
+            (mapcar #'decode-geocode-list hits))))))))
+
+
+        ;; (or
+        ;;  (iter (for el in hits)
+        ;;        (multiple-value-bind (name lat lng) (decode-geocode el)
+        ;;          (when
+        ;;            (format t "map hit: ~A ~A ~A~%" name lat lng)
+        ;;            (return (format nil "moveMap(~A,~A,8);moveMarker(~A,~A,~S);" lat lng lat lng name)))))
+        ;;  (if hits
+        ;;    (progn
+        ;;      (format t "No results inside bounds.~%")
+        ;;      (mapc #'print-geocode hits))
+        ;;    (format t "No map results.")))
+
+(defun select-maplist (name lat lng)
+  (format nil "moveMarker(~A,~A,~S);centerOnMarker();" lat lng (url-decode name)))
+
+(defun place-search (sw1 sw2 ne1 ne2)
+  (deck:search `(("demo:place" (:and (:>= "longitude" ,sw2)
+                                     (:<= "longitude" ,ne2)
+                                     (:>= "latitude" ,sw1)
+                                     (:<= "latitude" ,ne1))))))
+
+(defun set-map-drag-position (bounds)
+  (destructuring-bind (sw1 sw2 ne1 ne2) (mapcar #'parse-float (split-sequence #\, (url-decode bounds)))
+    (let ((yelps (yelp-business-search :box (list sw1 ne2 ne1 sw2)))
+          (local (place-search sw1 sw2 ne1 ne2)))
+      (when yelps
+        (set-maplist (decode-yelps yelps))))))
