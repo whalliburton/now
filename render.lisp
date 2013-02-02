@@ -148,12 +148,13 @@
                          (htm (:tr (:td (esc name)) (:td (fmt "~A" lat)) (:td (fmt "~A" lng))))))))))))
 
 (defun set-map-location (name bounds)
-  (destructuring-bind (sw1 sw2 se1 se2) (split-sequence #\, (url-decode bounds))
+  (destructuring-bind (sw1 sw2 ne1 ne2) (split-sequence #\, (url-decode bounds))
     (let ((sw1 (parse-float sw1))
           (sw2 (parse-float sw2))
-          (se1 (parse-float se1))
-          (se2 (parse-float se2))
-          (hits (geocode name (format nil "~A,~A|~A,~A" sw1 sw2 se1 se2))))
+          (ne1 (parse-float ne1))
+          (ne2 (parse-float ne2))
+          (hits (geocode name (format nil "~A,~A|~A,~A" sw1 sw2 ne1 ne2)))
+          (yelps (yelp-business-search :box (list ))))
       (or
        (iter (for el in hits)
              (multiple-value-bind (name lat lng) (decode-geocode el)
