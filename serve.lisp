@@ -52,7 +52,7 @@
                    collect (or (second (assoc name args))
                                (error "Missing arg ~S." name)))))
       (let ((command (first (with-args :command))))
-        (format t "command: ~A~%" command)
+        (format t "command: ~A  ~S~%" command args)
         (cond
           ((string-equal command "add-comment")
            (apply #'add-comment nil (with-args :target :text)))
@@ -65,7 +65,7 @@
           ((string-equal command "set-map-position")
            (apply #'set-map-position (with-args :lat :lng)))
           ((string-equal command "set-map-location")
-           (apply #'set-map-location (with-args :name))))))))
+           (apply #'set-map-location (with-args :name :bounds))))))))
 
 (defun add-comment (draft target-id text)
   (when (plusp (length text))

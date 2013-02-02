@@ -302,6 +302,9 @@
      (defun latlng (lat lng)
        (return (new ((@ google maps *lat-lng ) lat lng))))
 
+     (defun latitude (latlng) (return (slot-value latlng '*ya)))
+     (defun longitude (latlng) (return (slot-value latlng '*za)))
+
      (defun mapto (id lat lng zoom name)
        (let* ((latlng (latlng lat lng))
               (map (new ((@ google maps *map)
@@ -319,18 +322,28 @@
          (setf *map* map *marker* marker)
          ((@ google maps event add-listener) map "click"
           (lambda (event)
-            (request "set-map-position" (create :lat (slot-value (@ event lat-lng) '*ya)
-                                                :lng (slot-value (@ event lat-lng) '*za)))))))
+            (request "set-map-position" (create :lat (latitude (@ event lat-lng))
+                                                :lng (longitude (@ event lat-lng))))))))
 
-     (defun move-map (lat lng)
-       ((@ *map* set-center) (latlng lat lng)))
+     (defun move-map (lat lng &optional zoom)
+       ((@ *map* set-center) (latlng lat lng))
+       (when zoom ((@ *map* set-zoom) zoom)))
+
+     (defun map-bounds ()
+       (let* ((bounds ((@ *map* get-bounds)))
+              (sw ((@ bounds get-south-west)))
+              (ne ((@ bounds get-north-east))))
+         (return (list (latitude sw) (longitude sw) (latitude ne) (longitude ne)))))
 
      (defun move-marker (lat lng name)
        ((@ *marker* set-position) (latlng lat lng))
        ((@ *marker* set-title) name))
 
      (defun send-new-map-location (el)
-       (request "set-map-location" (create :name (@ el value))))
+       (let ((latlng ((@ *marker* get-position))))
+         (console latlng)
+         (request "set-map-location" (create :name (@ el value)
+                                             :bounds (map-bounds)))))
 
      (defun set-contents (id body)
        (set-inner-html (get-by-id id) body)))))

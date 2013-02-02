@@ -147,7 +147,21 @@
                        (multiple-value-bind (name lat lng) (decode-geocode el)
                          (htm (:tr (:td (esc name)) (:td (fmt "~A" lat)) (:td (fmt "~A" lng))))))))))))
 
-(defun set-map-location (name)
-  (when-let (hit (geocode name))
-    (multiple-value-bind (name lat lng) (decode-geocode (car hit))
-      (format nil "moveMap(~A,~A);moveMarker(~A,~A,~S);" lat lng lat lng name))))
+(defun set-map-location (name bounds)
+  (destructuring-bind (sw1 sw2 se1 se2) (split-sequence #\, (url-decode bounds))
+    (let ((sw1 (parse-float sw1))
+          (sw2 (parse-float sw2))
+          (se1 (parse-float se1))
+          (se2 (parse-float se2))
+          (hits (geocode name (format nil "~A,~A|~A,~A" sw1 sw2 se1 se2))))
+      (or
+       (iter (for el in hits)
+             (multiple-value-bind (name lat lng) (decode-geocode el)
+               (when (and (< sw1 lat se1) (< sw2 lng se2))
+                 (format t "map hit: ~A ~A ~A~%" name lat lng)
+                 (return (format nil "moveMap(~A,~A,8);moveMarker(~A,~A,~S);" lat lng lat lng name)))))
+       (if hits
+         (progn
+           (format t "No results inside bounds.~%")
+           (mapc #'print-geocode hits))
+         (format t "No map results."))))))
