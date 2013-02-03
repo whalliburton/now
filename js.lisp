@@ -247,7 +247,7 @@
                  (set-timeout
                   (lambda ()
                     (let ((response (slot-value req 'response-text)))
-                      (console "response" response)
+;;                      (console "response" response)
                       (eval response)))
                   10))))
         ((@ req open) "GET" (if encoded-arguments (+ url "&" encoded-arguments) url) t)
@@ -305,20 +305,28 @@
      (defun latitude (latlng) (return (slot-value latlng '*ya)))
      (defun longitude (latlng) (return (slot-value latlng '*za)))
 
+     (defun make-marker (map position title)
+       (return
+         (new ((@ google maps *marker)
+               (create :position position
+                       :map map
+                       :title title)))))
+
+     (defun remove-marker (marker)
+       ((@ marker set-map) nil))
+
+     (defun make-map (id center zoom)
+       (return
+         (new ((@ google maps *map)
+               (get-by-id id)
+               (create :center center
+                       :zoom zoom
+                       :map-type-id (@ google maps *map-type-id *r-o-a-d-m-a-p))))))
+
      (defun mapto (id lat lng zoom name)
        (let* ((latlng (latlng lat lng))
-              (map (new ((@ google maps *map)
-                         (get-by-id id)
-                         (create :center latlng
-                                 :zoom zoom
-                                 :map-type-id (@ google maps *map-type-id *r-o-a-d-m-a-p)))))
-              (marker
-                (new ((@ google maps *marker)
-                      (create :position latlng
-                              :map map
-                              :title name)))))
-         ;; ((@ google maps event add-listener) marker "click"
-         ;;  (lambda () ((@ marker set-map) nil)))
+              (map (make-map id latlng zoom))
+              (marker (make-marker map latlng name)))
          (setf *map* map *marker* marker)
          ((@ google maps event add-listener) map "dragend"
           (lambda ()
@@ -364,7 +372,16 @@
 
      (defun select-maplist (name lat lng)
        (request "select-maplist"
-                (create :name name :lat lat :lng lng))))))
+                (create :name name :lat lat :lng lng)))
+
+     (defvar *pois* nil)
+
+     (defun setup-pois (pois)
+       (let ((pois (eval pois)))
+         (when *pois* (loop for poi in *pois* do (remove-marker poi)))
+         (setf *pois*
+               (loop for (name lat lng) in pois
+                     collect (make-marker *map* (latlng lat lng) name))))))))
 
 (defun js-file () *js-file*)
 
