@@ -323,11 +323,16 @@
          ((@ google maps event add-listener) map "dragend"
           (lambda ()
             (let ((center ((@ *map* get-center))))
-              (request "set-map-drag-position"
+              (request "handle-map-dragend"
                        (create :bounds (map-bounds))))))
+         ((@ google maps event add-listener) map "zoom_changed"
+          (lambda ()
+            (let ((center ((@ *map* get-center))))
+              (request "handle-map-zoom-changed"
+                       (create :bounds (map-bounds) :zoom ((@ *map* get-zoom)))))))
          ((@ google maps event add-listener) map "click"
           (lambda (event)
-            (request "set-map-position" (create :lat (latitude (@ event lat-lng))
+            (request "handle-map-click" (create :lat (latitude (@ event lat-lng))
                                                 :lng (longitude (@ event lat-lng))))))))
 
      (defun move-map (lat lng &optional zoom)
@@ -357,9 +362,9 @@
      (defun set-contents (id body)
        (set-inner-html (get-by-id id) body))
 
-     (defun-trace select-maplist (name lat lng)
-            (request "select-maplist"
-                     (create :name name :lat lat :lng lng))))))
+     (defun select-maplist (name lat lng)
+       (request "select-maplist"
+                (create :name name :lat lat :lng lng))))))
 
 (defun js-file () *js-file*)
 

@@ -133,7 +133,7 @@
               :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "centerOnMarker();"
               (icon :map-marker)))
       (:td :style "vertical-align:top;"
-       (mapto stream "Merlyn's" 47.658752 -117.41198 18))
+       (mapto stream "Missoula" 46.950047 -113.90985 18))
       (:td :style "width:50px;")
       (:td :rowspan 2 (:div :id "list")))
      (:tr
@@ -172,7 +172,7 @@
 
                               (htm (:tr (:td :colspan 3 (:hr)))))))))))
 
-(defun set-map-position (lat lng)
+(defun handle-map-click (lat lng)
   (let ((lat (parse-float lat))
         (lng (parse-float lng)))
     (when-let ((near (geocode-latlng lat lng)))
@@ -215,9 +215,29 @@
                                      (:>= "latitude" ,sw1)
                                      (:<= "latitude" ,ne1))))))
 
-(defun set-map-drag-position (bounds)
-  (destructuring-bind (sw1 sw2 ne1 ne2) (mapcar #'parse-float (split-sequence #\, (url-decode bounds)))
-    (let ((yelps (yelp-business-search :box (list sw1 ne2 ne1 sw2)))
+(defun parse-text-bounds (string)
+  (mapcar #'parse-float (split-sequence #\, (url-decode string))))
+
+(defun update-map-on-new-bounds (bounds)
+  (destructuring-bind (sw1 sw2 ne1 ne2) bounds
+    (let (
+          ;;          (yelps (yelp-business-search :box (list sw1 ne2 ne1 sw2)))
           (local (place-search sw1 sw2 ne1 ne2)))
-      (when yelps
-        (set-maplist (decode-yelps yelps))))))
+      (when (or local ; yelps
+                )
+        (set-maplist
+         (append
+          (mapcar (lambda (node)
+                    (list (field-value node "name")
+                          (field-value node "latitude")
+                          (field-value node "longitude")))
+                  local)
+;          (decode-yelps yelps)
+          )))))
+  )
+
+(defun handle-map-dragend (bounds)
+  (update-map-on-new-bounds (parse-text-bounds bounds)))
+
+(defun handle-map-zoom-changed (bounds zoom)
+  (update-map-on-new-bounds (parse-text-bounds bounds)))
