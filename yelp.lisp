@@ -47,7 +47,7 @@
 (defparameter *yelp-category-to-icon*
   '(("coffee" :coffee)
     ("hotels" :building)
-    ("airport" :plane)
+    ("airports" :plane)
     ("bookstores" :book)
     ("locksmiths" :lock)
 
@@ -55,10 +55,15 @@
     ("bedbreakfast" :h-sign)
 
     ("grocery" :shopping-cart)
+    ("convenience" :shopping-cart)
+    ("wholesale_stores" :shopping-cart)
+    ("deptstores" :shopping-cart)
+    ("cosmetics" :shopping-cart)
     ("healthmarkets" :shopping-cart)
     ("womenscloth" :shopping-cart)
 
     ("landmarks" :building)
+    ("museums" :building)
     ("nonprofit" :building)
     ("drycleaninglaundry" :building)
 
@@ -86,6 +91,8 @@
     ("mexican" :food)
     ("cajun" :food)
     ("french" :food)
+    ("sandwiches" :food)
+    ("chicken_wings" :food)
 
     ("medcenters" :hospital)
     ("drugstores" :medkit)
@@ -96,8 +103,15 @@
     ("sportsbars" :beer)
     ("divebars" :beer)
     ("bars" :glass)
+    ("champagne_bars" :glass)
     ("wine_bars" :glass)
-    ("nightlife" :glass)))
+    ("nightlife" :glass)
+
+    ("adultentertainment" :strikethrough)
+    ("poolhalls" :strikethrough)
+
+    ("musicvenues" :music)
+))
 
 (defun icon-from-yelp-category (category)
   (or (second (assoc category *yelp-category-to-icon* :test #'string=))
@@ -107,15 +121,22 @@
   (iter (for el in categories)
         (collect (cdr (assoc :category--filter el)))))
 
+(defun place-exists (name lat lng)
+  (deck:nodes-exist `(("demo:place" (:and (:= "name" ,name)
+                                          (:= "latitude" ,lat)
+                                          (:= "longitude" ,lng))))))
+
 (defun build-yelp-place-nodes (yelps)
   (iter (for el in yelps)
         (format t "new place: ~A~%" (first el))
-        (let ((place
-                (deck:add-node "demo:place" `(("name" ,(first el))
-                                              ("latitude" ,(second el))
-                                              ("longitude" ,(third el))
-                                              ("categories" ,(fourth el))))))
-          (add-tags place (fourth el)))))
+        (if (place-exists (first el) (second el) (third el))
+          (warn "duplicate place ~S" (first el))
+          (let ((place
+                  (deck:add-node "demo:place" `(("name" ,(first el))
+                                                ("latitude" ,(second el))
+                                                ("longitude" ,(third el))
+                                                ("categories" ,(fourth el))))))
+            (add-tags place (fourth el))))))
 
 (defun add-tags (node tags)
   (iter (for tag in tags)

@@ -1,7 +1,24 @@
 (in-package :now)
 
 (defparameter *categories*
-  '("coffee"))
+  '("coffee"
+    "hospitals"
+    "airports"
+    "landmarks"
+    "grocery"
+    "medcenters"
+    "drugstores"
+    "museums"
+    "breweries"
+    "beer_and_wine"
+    "pubs"
+    "sportsbars"
+    "divebars"
+    "bars"
+    "wine_bars"
+    "nightlife"
+    "musicvenues"
+    "banks"))
 
 (defun import-missoula ()
   ;; (update-events)
