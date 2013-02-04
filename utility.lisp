@@ -62,3 +62,12 @@ a vector of octets."
 (defmacro eval-always (&body body)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      ,@body))
+
+(defun view-png (data)
+  (let ((filename (helpers:temporary-file-name)))
+    (unwind-protect
+         (progn
+           (with-output-to-file (stream filename :element-type '(unsigned-byte 8))
+             (write-sequence data stream))
+           (sb-ext:run-program "/usr/bin/feh" (list filename)))
+      (sb-posix:unlink filename))))
