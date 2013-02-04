@@ -10,5 +10,4 @@
   (ensure-directories-exist (now-file "logs/"))
   (start-session)
   (build)
-  ;;  (update-events)
   (start-now))

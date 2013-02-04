@@ -13,7 +13,11 @@
     ("ending" "event" "day" nil (("time" :date)))
 
     ("place" (("name" :string) ("latitude" :float) ("longitude" :float)
-              ("notes" :any) ("category" :string)))
+              ("notes" :any) ("categories" :string-list)))
+
+    ("tag" (("name" :string)))
+
+    ("tagged" "place" "tag" "tagging")
 
     ("person" (("name" :string)))
 

@@ -40,10 +40,7 @@
         (collect (list (cdr (assoc :name yelp))
                        (cdr (assoc :latitude yelp))
                        (cdr (assoc :longitude yelp))
-                       (iter (for category in
-                                  (filter-yelp-categories (cdr (assoc :categories yelp))))
-                             (when-let ((hit (icon-from-yelp-category category)))
-                               (return hit)))))))
+                       (filter-yelp-categories (cdr (assoc :categories yelp)))))))
 
 ;;; http://www.yelp.com/developers/documentation/category_list
 
@@ -87,6 +84,8 @@
     ("chinese" :food)
     ("thai" :food)
     ("mexican" :food)
+    ("cajun" :food)
+    ("french" :food)
 
     ("medcenters" :hospital)
     ("drugstores" :medkit)
@@ -107,3 +106,24 @@
 (defun filter-yelp-categories (categories)
   (iter (for el in categories)
         (collect (cdr (assoc :category--filter el)))))
+
+(defun build-yelp-place-nodes (yelps)
+  (iter (for el in yelps)
+        (format t "new place: ~A~%" (first el))
+        (let ((place
+                (deck:add-node "demo:place" `(("name" ,(first el))
+                                              ("latitude" ,(second el))
+                                              ("longitude" ,(third el))
+                                              ("categories" ,(fourth el))))))
+          (add-tags place (fourth el)))))
+
+(defun add-tags (node tags)
+  (iter (for tag in tags)
+        (deck:add-edge "demo:tagged" node (find-or-create-tag tag))))
+
+(defun find-or-create-tag (name)
+  (or
+   (deck:search `(("demo:tag" (:= "name" ,name))) :first-one t :return-ids t)
+   (progn
+     (format t "new tag ~S~%" name)
+     (deck:add-node "demo:tag" `(("name" ,name))))))

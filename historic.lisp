@@ -55,8 +55,11 @@
 (defun build-historic-places-nodes (places-latlng)
   (iter (for el in places-latlng)
         (format t "new historic place: ~A~%" (fourth el))
-        (deck:add-node "demo:place" `(("name" ,(fourth el))
-                                      ("latitude" ,(first el))
-                                      ("longitude" ,(second el))
-                                      ("notes" ,el)
-                                      ("category" "landmarks")))))
+        (let ((place
+                (deck:add-node "demo:place" `(("name" ,(fourth el))
+                                              ("latitude" ,(first el))
+                                              ("longitude" ,(second el))
+                                              ("notes" ,el)
+                                              ("categories" '("landmarks"))))))
+          (add-tags place '("landmarks")))))
+

@@ -47,14 +47,14 @@
         (htm
          (:table
           (:tr
-           (iter (for name in '("place" "event" "day" ("map")))
+           (iter (for name in '("tag" "place" "event" "day" ("map")))
                  (let ((template (not (consp name)))
                        (name (if (consp name) (car name) name)))
                    (htm (:td :class "selectable-row" :onclick (format nil "go(\"/?what=~A\");" name)
                              (esc name) (when template (str "s"))))))))
          (:br)
          (:table
-          (iter (for node in (deck:search (format nil "demo:~A" (or what "place"))))
+          (iter (for node in (deck:search (format nil "demo:~A" (or what "tag"))))
                 (render-node node stream)))))))))
 
 (defun render-node (node stream &optional detail)
@@ -72,7 +72,8 @@
     (icon (case type
             (:place :map-marker)
             (:day :calendar)
-            (:event :time)))
+            (:event :time)
+            (:tag :tag)))
     (princ #\space stream)))
 
 (defun mapto (stream name lat lon zoom &optional onload)
@@ -81,14 +82,15 @@
       (htm
        (:div :id id :style "width:400px;height:400px;")
        (:script :type "text/javascript"
-                (fmt "mapto(~S,~A,~A,~A,~S,~S);" id lat lon zoom name onload))))))
+                (fmt "mapto(~S,~A,~A,~A,~S,~S);" id lat lon zoom name (or onload "null")))))))
 
 (defmethod render ((type (eql :place)) node stream detail)
   (let ((latitude (field-value node "latitude")))
     (with-html-output (stream)
       (if detail
-        (when latitude
-          (mapto stream (field-value node "name") latitude (field-value node "longitude") 8))
+        (progn
+          (when latitude
+            (mapto stream (field-value node "name") latitude (field-value node "longitude") 8)))
         (progn
           (esc (field-value node "name"))
           ;; (when latitude
@@ -117,6 +119,16 @@
     nil
     (format-timestring stream (field-value node "start") :format +day-time-format+)))
 
+(defmethod render ((type (eql :tag)) node stream detail)
+  (if detail
+    nil
+    (let ((name (field-value node "name")))
+      (with-html-output (stream)
+        (when-let (icon (icon-from-yelp-category name))
+          (icon icon)
+          (str " "))
+        (esc name)))))
+
 (defun render-children (node stream)
   (when-let (children (deck:get-children node :any-direction t))
     (with-html-output (stream)
@@ -124,25 +136,28 @@
               (iter (for child in children)
                     (render-node child stream))))))
 
-(defun render-map (stream)
-  (with-html-output (stream)
-    (:table
-     (:tr
-      (:td :style "vertical-align:top;padding:5px;"
-       (:span :class "button"
-              :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "centerOnMarker();"
-              (icon :map-marker)))
-      (:td :style "vertical-align:top;"
-       (mapto stream "Missoula" 46.870047 -113.995 15 "sendDragend();"))
-      (:td :style "width:50px;")
-      (:td :rowspan 2 (:div :id "list")))
-     (:tr
-      (:td)
-      (:td :style "padding:20px;vertical-align:top;"
-           (:input :style "border-width:1px;border-color:#222;border-style:solid;padding:5px 10px 5px 10px;width:360px;background-color:black;color:white;" :type "text"
-                   :onchange "sendNewMapLocation(this);"))))))
+(defparameter *initial-map-position* nil)
 
-(defparameter *local-bounds* '(46.49 -114.54 47.24 -113.45))
+(defun render-map (stream)
+  (destructuring-bind (name lat lng zoom) *initial-map-position*
+    (with-html-output (stream)
+      (:table
+       (:tr
+        (:td :style "vertical-align:top;padding:5px;"
+             (:span :class "button"
+                    :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "centerOnMarker();"
+                    (icon :map-marker)))
+        (:td :style "vertical-align:top;"
+             (mapto stream name lat lng zoom "sendDragend();"))
+        (:td :style "width:50px;")
+        (:td :rowspan 2 (:div :id "list")))
+       (:tr
+        (:td)
+        (:td :style "padding:20px;vertical-align:top;"
+             (:input :style "border-width:1px;border-color:#222;border-style:solid;padding:5px 10px 5px 10px;width:360px;background-color:black;color:white;" :type "text"
+                     :onchange "sendNewMapLocation(this);")))))))
+
+(defparameter *local-bounds* nil)
 
 (defun set-maplist (elements)
   (let* ((sw1 (first *local-bounds*))
@@ -199,7 +214,7 @@
         (set-maplist
          (when yelps
            (append
-            (and yelps (decode-yelps yelps))
+;            (and yelps (decode-yelps yelps))
 ;            (mapcar #'decode-geocode-list hits)
             )))))))
 
@@ -245,7 +260,7 @@
                     (list (field-value node "name")
                           (field-value node "latitude")
                           (field-value node "longitude")
-                          (icon-from-yelp-category (field-value node "category"))))
+                          (icon-from-yelp-category (first (field-value node "categories")))))
                   local)
 ;          (decode-yelps yelps)
           )))))

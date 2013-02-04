@@ -21,4 +21,4 @@
 (defun vector-dispatch ()
   (let ((raw (subseq (hunchentoot:script-name*) 10)))
     (destructuring-bind (name &optional color) (split-sequence #\/ raw)
-      (draw-icon name color))))
+      (draw-icon-memoized (list name color)))))
