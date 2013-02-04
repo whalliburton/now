@@ -371,10 +371,9 @@
        (when zoom ((@ *map* set-zoom) zoom)))
 
      (defun send-new-map-location (el)
-       (let ((latlng ((@ *marker* get-position))))
-         (console latlng)
-         (request "set-map-location" (create :name (@ el value)
-                                             :bounds (map-bounds)))))
+       (request "set-map-location" (create :name (@ el value)
+                                           :bounds (map-bounds)))
+       (setf (@ el value) ""))
 
      (defun set-contents (id body)
        (set-inner-html (get-by-id id) body))

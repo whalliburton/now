@@ -139,11 +139,10 @@
      (:tr
       (:td)
       (:td :style "padding:20px;vertical-align:top;"
-       (:input :style "border-width:0px;padding:5px 10px 5px 10px;width:360px;" :type "text"
-               :onchange "sendNewMapLocation(this);"))))))
+           (:input :style "border-width:1px;border-color:#222;border-style:solid;padding:5px 10px 5px 10px;width:360px;background-color:black;color:white;" :type "text"
+                   :onchange "sendNewMapLocation(this);"))))))
 
-(defparameter *local-bounds*
-  '(46.91355420561214 -118.52468281250003 48.3935186680299 -116.32741718750003))
+(defparameter *local-bounds* '(46.49 -114.54 47.24 -113.45))
 
 (defun set-maplist (elements)
   (let* ((sw1 (first *local-bounds*))
