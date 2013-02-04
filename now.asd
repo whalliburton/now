@@ -7,6 +7,7 @@
                (:file "icons")
                (:file "build")
                (:file "serve")
+               (:file "color")
                (:file "render")
                (:file "ical")
                (:file "events")
