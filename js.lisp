@@ -305,12 +305,17 @@
      (defun latitude (latlng) (return (slot-value latlng '*ya)))
      (defun longitude (latlng) (return (slot-value latlng '*za)))
 
-     (defun make-marker (map position title)
-       (return
-         (new ((@ google maps *marker)
-               (create :position position
-                       :map map
-                       :title title)))))
+     (defun make-marker (map position title &optional icon)
+       (let ((marker
+               (new ((@ google maps *marker)
+                     (create :position position
+                             :map map
+                             :title title
+                             :icon (+ "/images/" icon
+                                      (if (= ((@ icon index-of) "v/") 0)
+                                        ""
+                                        ".png")))))))
+         (return marker)))
 
      (defun remove-marker (marker)
        ((@ marker set-map) nil))
@@ -388,8 +393,8 @@
        (let ((pois (eval pois)))
          (when *pois* (loop for poi in *pois* do (remove-marker poi)))
          (setf *pois*
-               (loop for (name lat lng) in pois
-                     collect (make-marker *map* (latlng lat lng) name)))))
+               (loop for (name lat lng icon) in pois
+                     collect (make-marker *map* (latlng lat lng) name icon)))))
 
      (defvar *info-window* nil)
 

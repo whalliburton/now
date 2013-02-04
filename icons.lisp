@@ -255,7 +255,7 @@
   (defparameter *icon-names* (mapcar #'car *icon-index*)))
 
 (defun icon-index-from-name (name)
-  (or (second (assoc name *icon-index*))
+  (or (second (assoc name *icon-index* :test #'string-equal))
       (error "Invalid icon ~S." name)))
 
 (defun print-icon (icon stream)

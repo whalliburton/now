@@ -25,6 +25,6 @@
                   (or (and short (subseq hex 2 3)) (subseq hex 4 6)) :radix 16))
               (a (and alpha-chars (parse-integer alpha-chars :radix 16))))
          (if short
-           (vector (+ r (* 16 r)) (+ g (* 16 g)) (+ b (* 16 b)) (and a (+ a (* 16 a))))
-           (vector r g b a))))
+           (values (+ r (* 16 r)) (+ g (* 16 g)) (+ b (* 16 b)) (and a (+ a (* 16 a))))
+           (values r g b a))))
      (error "Invalid hex color ~A." hex))))

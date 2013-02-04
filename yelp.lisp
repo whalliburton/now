@@ -39,4 +39,34 @@
   (iter (for yelp in yelps)
         (collect (list (cdr (assoc :name yelp))
                        (cdr (assoc :latitude yelp))
-                       (cdr (assoc :longitude yelp))))))
+                       (cdr (assoc :longitude yelp))
+                       (iter (for category in
+                                  (filter-yelp-categories (cdr (assoc :categories yelp))))
+                             (when-let ((hit (icon-from-yelp-category category)))
+                               (return hit)))))))
+
+;;; http://www.yelp.com/developers/documentation/category_list
+
+(defparameter *yelp-category-to-icon*
+  '(("coffee" :coffee)
+    ("hotels" :building)
+    ("airport" :plane)
+    ("breweries" :beer)
+
+    ("gourmet" :food)
+    ("bakeries" :food)
+    ("bagels" :food)
+    ("icecream" :food)
+    ("breakfast_brunch" :food)
+    ("farmersmarket" :food)
+    ("newamerican" :food)
+    ("tapasmallplates" :food)
+    ("diners" :food)))
+
+(defun icon-from-yelp-category (category)
+  (or (second (assoc category *yelp-category-to-icon* :test #'string=))
+      (warn "unknown yelp category ~S" category)))
+
+(defun filter-yelp-categories (categories)
+  (iter (for el in categories)
+        (collect (cdr (assoc :category--filter el)))))

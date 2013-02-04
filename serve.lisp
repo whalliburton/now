@@ -20,6 +20,7 @@
           ,(hunchentoot:create-static-file-dispatcher-and-handler "/fontawesome-webfont.ttf"
                                                                   (now-file "fontawesome-webfont.ttf"))
           ,(hunchentoot:create-prefix-dispatcher "/js/now.js" 'now-js:js-file)
+          ,(hunchentoot:create-prefix-dispatcher "/images/v/" 'vector-dispatch)
           ,(hunchentoot:create-folder-dispatcher-and-handler "/images/" (now-file "images/"))
           ,(hunchentoot:create-prefix-dispatcher "/favicon.ico" 'favicon-dispatch)
           hunchentoot:dispatch-easy-handlers

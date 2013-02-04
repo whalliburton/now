@@ -8,6 +8,7 @@
                (:file "build")
                (:file "serve")
                (:file "color")
+               (:file "vector")
                (:file "render")
                (:file "ical")
                (:file "events")
@@ -18,4 +19,5 @@
                (:file "initialize"))
   :depends-on (:hunchentoot :deck-client :closure-html :alexandria :iterate :cl-who
                             :parenscript :local-time :split-sequence :chronicity
-                            :drakma :cl-json :babel :anaphora :net-telent-date :fare-csv))
+                            :drakma :cl-json :babel :anaphora :net-telent-date :fare-csv
+                            :vecto))
