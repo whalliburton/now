@@ -311,10 +311,11 @@
                      (create :position position
                              :map map
                              :title title
-                             :icon (+ "/images/" icon
-                                      (if (= ((@ icon index-of) "v/") 0)
-                                        ""
-                                        ".png")))))))
+                             :icon (and icon
+                                        (+ "/images/" icon
+                                           (if (= ((@ icon index-of) "v/") 0)
+                                             ""
+                                             ".png"))))))))
          (return marker)))
 
      (defun remove-marker (marker)
