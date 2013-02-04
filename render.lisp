@@ -75,13 +75,13 @@
             (:event :time)))
     (princ #\space stream)))
 
-(defun mapto (stream name lat lon zoom)
+(defun mapto (stream name lat lon zoom &optional onload)
   (let ((id (random-string 3)))
     (with-html-output (stream)
       (htm
        (:div :id id :style "width:400px;height:400px;")
        (:script :type "text/javascript"
-                (fmt "mapto(~S,~A,~A,~A,~S);" id lat lon zoom name))))))
+                (fmt "mapto(~S,~A,~A,~A,~S,~S);" id lat lon zoom name onload))))))
 
 (defmethod render ((type (eql :place)) node stream detail)
   (let ((latitude (field-value node "latitude")))
@@ -133,7 +133,7 @@
               :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "centerOnMarker();"
               (icon :map-marker)))
       (:td :style "vertical-align:top;"
-       (mapto stream "Missoula" 46.950047 -113.90985 18))
+       (mapto stream "Missoula" 46.870047 -113.995 15 "sendDragend();"))
       (:td :style "width:50px;")
       (:td :rowspan 2 (:div :id "list")))
      (:tr
@@ -213,7 +213,11 @@
         ;;    (format t "No map results.")))
 
 (defun select-maplist (name lat lng)
-  (format nil "moveMarker(~A,~A,~S);centerOnMarker();" lat lng (url-decode name)))
+  (format nil "moveMarker(~A,~A,~S);centerOnMarker();infoWindow(~A,~A,~S);"
+          lat lng (url-decode name)
+          lat lng (with-html-output-to-string (stream)
+                      (:div :style "color:black;"
+                            (esc (url-decode name))))))
 
 (defun place-search (sw1 sw2 ne1 ne2)
   (deck:search `(("demo:place" (:and (:>= "longitude" ,sw2)

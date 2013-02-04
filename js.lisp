@@ -315,24 +315,22 @@
      (defun remove-marker (marker)
        ((@ marker set-map) nil))
 
+     (defvar *roadmap* (@ google maps *map-type-id *r-o-a-d-m-a-p))
+
      (defun make-map (id center zoom)
        (return
          (new ((@ google maps *map)
                (get-by-id id)
                (create :center center
                        :zoom zoom
-                       :map-type-id (@ google maps *map-type-id *r-o-a-d-m-a-p))))))
+                       :map-type-id *roadmap*)))))
 
-     (defun mapto (id lat lng zoom name)
+     (defun mapto (id lat lng zoom name onload)
        (let* ((latlng (latlng lat lng))
-              (map (make-map id latlng zoom))
-              (marker (make-marker map latlng name)))
-         (setf *map* map *marker* marker)
+              (map (make-map id latlng zoom)))
+         (setf *map* map)
          ((@ google maps event add-listener) map "dragend"
-          (lambda ()
-            (let ((center ((@ *map* get-center))))
-              (request "handle-map-dragend"
-                       (create :bounds (map-bounds))))))
+          (lambda () (send-dragend)))
          ((@ google maps event add-listener) map "zoom_changed"
           (lambda ()
             (let ((center ((@ *map* get-center))))
@@ -341,7 +339,15 @@
          ((@ google maps event add-listener) map "click"
           (lambda (event)
             (request "handle-map-click" (create :lat (latitude (@ event lat-lng))
-                                                :lng (longitude (@ event lat-lng))))))))
+                                                :lng (longitude (@ event lat-lng))))))
+         (when onload
+           ((@ google maps event add-listener) map "tilesloaded"
+            (lambda (event) (eval onload))))))
+
+     (defun send-dragend ()
+       (let ((center ((@ *map* get-center))))
+         (request "handle-map-dragend"
+                  (create :bounds (map-bounds)))))
 
      (defun move-map (lat lng &optional zoom)
        ((@ *map* set-center) (latlng lat lng))
@@ -354,8 +360,11 @@
          (return (list (latitude sw) (longitude sw) (latitude ne) (longitude ne)))))
 
      (defun move-marker (lat lng name)
-       ((@ *marker* set-position) (latlng lat lng))
-       ((@ *marker* set-title) name))
+       (if *marker*
+         (progn
+           ((@ *marker* set-position) (latlng lat lng))
+           ((@ *marker* set-title) name))
+         (setf *marker* (make-marker *map* (latlng lat lng) name))))
 
      (defun center-on-marker (&optional zoom)
        ((@ *map* set-center) ((@ *marker* get-position)))
@@ -381,7 +390,19 @@
          (when *pois* (loop for poi in *pois* do (remove-marker poi)))
          (setf *pois*
                (loop for (name lat lng) in pois
-                     collect (make-marker *map* (latlng lat lng) name))))))))
+                     collect (make-marker *map* (latlng lat lng) name)))))
+
+     (defvar *info-window* nil)
+
+     (defun info-window (lat lng content)
+       (when *info-window*
+         ((@ *info-window* close)))
+       (setf *info-window*
+             (let ((window (new ((@ google maps *info-window)))))
+               ((@ window set-content) content)
+               ((@ window set-position) (latlng lat lng))
+               ((@ window open) *map*)
+               window))))))
 
 (defun js-file () *js-file*)
 
