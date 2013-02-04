@@ -10,7 +10,7 @@
                          (float (/ g 255))
                          (float (/ b 255))
                          (float (/ (or a 255) 255))))        )
-      (draw-string 0 5 (princ-to-string (icon-index-from-name icon)))
+      (draw-string 0 4 (princ-to-string (icon-index-from-name icon)))
       (stroke)
       (flexi-streams:with-output-to-sequence (stream)
         (save-png-stream stream)))))

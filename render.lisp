@@ -156,7 +156,7 @@
                    (if (and (< sw1 lat ne1) (< sw2 lng ne2))
                      (collect (cons t el) into inside)
                      (collect (cons nil el) into outside)))
-                 (finally (return (append inside (list nil) outside))))))
+                 (finally (return (append inside (when outside (list nil)) outside))))))
     (format nil "setContents('list',~S);setupPois(~S);"
             (with-html-output-to-string (stream)
               (:table :class "maplist"
@@ -194,13 +194,14 @@
             (sw2 (parse-float sw2))
             (ne1 (parse-float ne1))
             (ne2 (parse-float ne2))
-            (hits (geocode name (format nil "~A,~A|~A,~A" sw1 sw2 ne1 ne2)))
+;            (hits (geocode name (format nil "~A,~A|~A,~A" sw1 sw2 ne1 ne2)))
             (yelps (yelp-business-search :term name :box (list sw1 ne2 ne1 sw2))))
         (set-maplist
-         (when (or hits yelps)
+         (when yelps
            (append
             (and yelps (decode-yelps yelps))
-            (mapcar #'decode-geocode-list hits))))))))
+;            (mapcar #'decode-geocode-list hits)
+            )))))))
 
 
         ;; (or
@@ -243,7 +244,8 @@
           (mapcar (lambda (node)
                     (list (field-value node "name")
                           (field-value node "latitude")
-                          (field-value node "longitude")))
+                          (field-value node "longitude")
+                          (icon-from-yelp-category (field-value node "category"))))
                   local)
 ;          (decode-yelps yelps)
           )))))

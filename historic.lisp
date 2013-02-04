@@ -58,4 +58,5 @@
         (deck:add-node "demo:place" `(("name" ,(fourth el))
                                       ("latitude" ,(first el))
                                       ("longitude" ,(second el))
-                                      ("notes" ,el)))))
+                                      ("notes" ,el)
+                                      ("category" "landmarks")))))
