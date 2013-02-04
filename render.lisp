@@ -232,8 +232,8 @@
         ;;    (format t "No map results.")))
 
 (defun select-maplist (name lat lng)
-  (format nil "moveMarker(~A,~A,~S);centerOnMarker();infoWindow(~A,~A,~S);"
-          lat lng (url-decode name)
+  (format nil "centerMap(~A,~A);infoWindow(~A,~A,~S);"
+          lat lng
           lat lng (with-html-output-to-string (stream)
                       (:div :style "color:black;"
                             (esc (url-decode name))))))

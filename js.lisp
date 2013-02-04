@@ -376,6 +376,9 @@
        ((@ *map* set-center) ((@ *marker* get-position)))
        (when zoom ((@ *map* set-zoom) zoom)))
 
+     (defun center-map (lat lng)
+       ((@ *map* set-center) (latlng lat lng)))
+
      (defun send-new-map-location (el)
        (request "set-map-location" (create :name (@ el value)
                                            :bounds (map-bounds)))
