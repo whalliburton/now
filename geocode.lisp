@@ -30,7 +30,15 @@
          (location (cdr (assoc :location geometry)))
          (lat (cdr (assoc :lat location)))
          (lng (cdr (assoc :lng location))))
-    (values name lat lng types)))
+    (values name lat lng
+            (icon-from-geocode-type (car types)))))
+
+(defparameter *geocode-type-icons*
+  `(("point_of_interest" :pushpin)))
+
+(defun icon-from-geocode-type (type)
+  (or (second (assoc type *geocode-type-icons* :test #'string=))
+      :globe))
 
 (defun decode-geocode-list (geocode)
   (multiple-value-list (decode-geocode geocode)))
