@@ -182,10 +182,12 @@
               (:table
                :class "maplist"
                (iter (for el in sorted)
+                     (for index from 0)
                      (if el
                        (destructuring-bind (inside name lat lng &optional icon) el
                          (declare (ignore inside))
                          (htm (:tr :class "selectable"
+                                   :id (format nil "box-~A" index)
                                    :onclick (format nil "selectMaplist(~S,~A,~A);"
                                                     (cl-who:escape-string name) lat lng)
 
@@ -197,10 +199,12 @@
                        (htm (:tr (:td :colspan 3 (:hr))))))))
             (json:encode-json-to-string
              (iter (for el in sorted)
+                   (for index from 0)
                    (when el
                      (destructuring-bind (inside name lat lng &optional icon) el
                        (declare (ignore inside))
-                       (collect (list name lat lng (and icon (format nil "v/~(~A~)/24/000A" icon)))))))))))
+                       (collect (list name lat lng (and icon (format nil "v/~(~A~)/24/0000/A77A" icon))
+                                      (format nil "box-~A" index))))))))))
 
 (defun handle-map-click (lat lng)
   (let ((lat (parse-float lat))

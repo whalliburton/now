@@ -26,6 +26,17 @@
 (defpsmacro remove-node (el)
   `((@ ,el parent-node remove-child) ,el))
 
+(defparameter *pixel-styles*
+  '(top bottom left right width height border-width))
+
+;; FIXME might be faster to setAttributes
+(defpsmacro set-style ((&rest var) &rest args)
+  `(setf
+    ,@(loop for (a b) on args by #'cddr
+            nconc
+            `((@ ,@var style ,a)
+                       ,(if (and b (member a *pixel-styles*)) `(+ ,b "px") b)))))
+
 (defun ensure-string (symbol-or-string)
   (etypecase symbol-or-string
     (symbol (symbol-name symbol-or-string))
@@ -331,8 +342,8 @@
                        :zoom zoom
                        :map-type-id *roadmap*)))))
 
-     (defun add-listener (type fn)
-       ((@ google maps event add-listener) *map* type fn))
+     (defun add-listener (type fn &optional (what *map*))
+       ((@ google maps event add-listener) what type fn))
 
      (defun mapto (id lat lng zoom name onload controls-id)
        (let* ((latlng (latlng lat lng))
@@ -418,8 +429,24 @@
        (let ((pois (eval pois)))
          (when *pois* (loop for poi in *pois* do (remove-marker poi)))
          (setf *pois*
-               (loop for (name lat lng icon) in pois
-                     collect (make-marker *map* (latlng lat lng) name icon)))))
+               (loop for (name lat lng icon box-id) in pois
+                     collect
+                        (let ((marker (make-marker *map* (latlng lat lng) name icon)))
+                          (when box-id (setup-box-listeners marker box-id))
+                          marker)))))
+
+     (defun setup-box-listeners (marker id)
+       (add-listener "mouseover" (lambda () (hilight-box id)) marker)
+       (add-listener "mouseout" (lambda () (unhilight-box id)) marker))
+
+     (defun hilight-box (id)
+      (let ((el (get-by-id id)))
+        (setf (slot-value el 'saved-background) (@ el style background-color))
+        (set-style (el) background-color "#444")))
+
+     (defun unhilight-box (id)
+      (let ((el (get-by-id id)))
+        (set-style (el) background-color (slot-value el 'saved-background))))
 
      (defvar *info-window* nil)
 
