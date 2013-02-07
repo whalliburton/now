@@ -82,7 +82,8 @@
       (htm
        (:div :id id :style "width:400px;height:400px;")
        (:script :type "text/javascript"
-                (fmt "mapto(~S,~A,~A,~A,~S,~S);" id lat lon zoom name (or onload "null")))))))
+                (fmt "mapto(~S,~A,~A,~A,~S,~S);sendClientLocation();"
+                     id lat lon zoom name (or onload "null")))))))
 
 (defmethod render ((type (eql :place)) node stream detail)
   (let ((latitude (field-value node "latitude")))
@@ -271,3 +272,6 @@
 
 (defun handle-map-zoom-changed (bounds zoom)
   (update-map-on-new-bounds (parse-text-bounds bounds)))
+
+(defun set-client-location (lat lng)
+  (format nil "moveMarker(~A,~A,'self');centerOnMarker();" lat lng))

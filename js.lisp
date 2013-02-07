@@ -384,6 +384,14 @@
                                            :bounds (map-bounds)))
        (setf (@ el value) ""))
 
+     (defun send-client-location ()
+       (when (@ navigator geolocation)
+         ((@ navigator geolocation get-current-position)
+          (lambda (pos)
+            (request "set-client-location"
+                     (create :lat (@ pos coords latitude)
+                             :lng (@ pos coords longitude)))))))
+
      (defun set-contents (id body)
        (set-inner-html (get-by-id id) body))
 

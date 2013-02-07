@@ -72,7 +72,9 @@
           ((string-equal command "set-map-location")
            (apply #'set-map-location (with-args :name :bounds)))
           ((string-equal command "select-maplist")
-           (apply #'select-maplist (with-args :name :lat :lng))))))))
+           (apply #'select-maplist (with-args :name :lat :lng)))
+          ((string-equal command "set-client-location")
+           (apply #'set-client-location (with-args :lat :lng))))))))
 
 (defun add-comment (draft target-id text)
   (when (plusp (length text))
