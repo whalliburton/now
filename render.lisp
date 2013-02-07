@@ -185,20 +185,24 @@
                :class "maplist"
                (iter (for el in sorted)
                      (for index from 0)
-                     (if el
-                       (destructuring-bind (inside name lat lng &optional icon) el
-                         (declare (ignore inside))
-                         (htm (:tr :class "selectable"
-                                   :id (format nil "box-~A" index)
-                                   :onclick (format nil "selectMaplist(~S,~A,~A);"
-                                                    (cl-who:escape-string name) lat lng)
+                     (let ((box-id (format nil "box-~A" index)))
+                      (if el
+                        (destructuring-bind (inside name lat lng &optional icon) el
+                          (declare (ignore inside))
+                          (htm (:tr :class "selectable"
+                                    :id box-id
+                                    :onclick (format nil "selectMaplist(~S,~A,~A);"
+                                                     (cl-who:escape-string name) lat lng)
+                                    :onmouseover (format nil "hilightPoi(~S);" box-id)
+                                    :onmouseout  (format nil "unhilightPoi(~S);" box-id)
+                                    (:td (when icon
+                                           (htm (:img :src
+                                                      (format nil "/images/v/~(~A~)" icon)))))
+                                    (:td (esc name))
+                                    ;; (:td (fmt "~A" lat)) (:td (fmt "~A" lng))
+                                    )))
 
-                                   (:td (when icon
-                                          (htm (:img :src
-                                                     (format nil "/images/v/~(~A~)" icon)))))
-                                   (:td (esc name)) (:td (fmt "~A" lat)) (:td (fmt "~A" lng)))))
-
-                       (htm (:tr (:td :colspan 3 (:hr))))))))
+                        (htm (:tr (:td :colspan 3 (:hr)))))))))
             (json:encode-json-to-string
              (iter (for el in sorted)
                    (for index from 0)

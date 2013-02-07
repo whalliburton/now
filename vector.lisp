@@ -36,8 +36,13 @@
 
 (defun vector-dispatch ()
   (setf (hunchentoot:content-type*) "image/png")
-  (let ((raw (subseq (hunchentoot:script-name*) 10)))
-    (destructuring-bind (name &optional size fill stroke) (split-sequence #\/ raw)
-      (if *debug-vector*
-        (draw-icon name (or (and size (parse-integer size)) 24 ) fill stroke)
-        (draw-icon-memoized (list name (or (and size (parse-integer size)) 24 ) fill stroke))))))
+  (let ((hilight (hunchentoot:get-parameter "hilight")))
+    (let ((raw (subseq (hunchentoot:script-name*) 10)))
+      (destructuring-bind (name &optional size fill stroke) (split-sequence #\/ raw)
+        (if *debug-vector*
+          (draw-icon name (or (and size (parse-integer size)) 24 ) fill stroke)
+          (draw-icon-memoized (list name
+                                    (if hilight
+                                      48
+                                      (or (and size (parse-integer size)) 24))
+                                    fill stroke)))))))

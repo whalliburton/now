@@ -316,17 +316,20 @@
      (defun latitude (latlng) (return ((@ latlng lat))))
      (defun longitude (latlng) (return ((@ latlng lng))))
 
+     (defun icon-src (icon)
+       (return
+         (+ "/images/" icon
+            (if (= ((@ icon index-of) "v/") 0)
+              ""
+              ".png"))))
+
      (defun make-marker (map position title &optional icon)
        (let ((marker
                (new ((@ google maps *marker)
                      (create :position position
                              :map map
                              :title title
-                             :icon (and icon
-                                        (+ "/images/" icon
-                                           (if (= ((@ icon index-of) "v/") 0)
-                                             ""
-                                             ".png"))))))))
+                             :icon (and icon (icon-src icon)))))))
          (return marker)))
 
      (defun remove-marker (marker)
@@ -427,13 +430,35 @@
 
      (defun setup-pois (pois)
        (let ((pois (eval pois)))
-         (when *pois* (loop for poi in *pois* do (remove-marker poi)))
+         (when *pois* (loop for (box-id poi) in *pois* do (remove-marker poi)))
          (setf *pois*
                (loop for (name lat lng icon box-id) in pois
                      collect
-                        (let ((marker (make-marker *map* (latlng lat lng) name icon)))
-                          (when box-id (setup-box-listeners marker box-id))
-                          marker)))))
+                        (list box-id
+                              (let ((marker (make-marker *map* (latlng lat lng) name icon)))
+                                (when box-id (setup-box-listeners marker box-id))
+                                marker))))))
+
+     (defun find-poi (id)
+       (loop for (box-id poi) in *pois*
+             when (= box-id id)
+             do (return poi))
+       (error "unknown poi" id))
+
+     (defun hilight-poi (id)
+       (hilight-marker (find-poi id)))
+
+     (defun unhilight-poi (id)
+       (unhilight-marker (find-poi id)))
+
+     (defun hilight-marker (marker)
+       (let ((icon ((@ marker get-icon))))
+         (setf (slot-value marker 'old-icon) icon)
+         ((@ marker set-icon) (+ icon "?hilight=yes"))))
+
+     (defun unhilight-marker (marker)
+       (let ((icon ((@ marker get-icon))))
+         ((@ marker set-icon) (slot-value marker 'old-icon))))
 
      (defun setup-box-listeners (marker id)
        (add-listener "mouseover" (lambda () (hilight-box id)) marker)
