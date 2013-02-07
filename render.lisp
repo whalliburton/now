@@ -79,14 +79,14 @@
             (:tag :tag)))
     (princ #\space stream)))
 
-(defun mapto (stream name lat lon zoom &optional onload)
+(defun mapto (stream name lat lon zoom &optional onload controls-id)
   (let ((id (random-string 3)))
     (with-html-output (stream)
       (htm
        (:div :id id :style "width:400px;height:400px;")
        (:script :type "text/javascript"
-                (fmt "mapto(~S,~A,~A,~A,~S,~S);sendClientLocation();"
-                     id lat lon zoom name (or onload "null")))))))
+                (fmt "mapto(~S,~A,~A,~A,~S,~S,~S);sendClientLocation();"
+                     id lat lon zoom name (or onload "null") (or controls-id "null")))))))
 
 (defmethod render ((type (eql :place)) node stream detail)
   (let ((latitude (field-value node "latitude")))
@@ -152,9 +152,10 @@
                     :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "centerOnMarker();"
                     (icon :map-marker)))
         (:td :style "vertical-align:top;"
-             (mapto stream name lat lng zoom "sendDragend();"))
+             (mapto stream name lat lng zoom "sendDragend();" "controls"))
         (:td :style "width:50px;")
-        (:td :rowspan 2 (:div :id "list")))
+        (:td :rowspan 3 (:div :id "list")))
+       (:tr (:td) (:td (:div :style "padding:20px 20px 0px 20px;" :id "controls")))
        (:tr
         (:td)
         (:td :style "padding:20px;vertical-align:top;"

@@ -302,8 +302,8 @@
      (defun latlng (lat lng)
        (return (new ((@ google maps *lat-lng ) lat lng))))
 
-     (defun latitude (latlng) (return (slot-value latlng '*ya)))
-     (defun longitude (latlng) (return (slot-value latlng '*za)))
+     (defun latitude (latlng) (return ((@ latlng lat))))
+     (defun longitude (latlng) (return ((@ latlng lng))))
 
      (defun make-marker (map position title &optional icon)
        (let ((marker
@@ -331,24 +331,37 @@
                        :zoom zoom
                        :map-type-id *roadmap*)))))
 
-     (defun mapto (id lat lng zoom name onload)
+     (defun add-listener (type fn)
+       ((@ google maps event add-listener) *map* type fn))
+
+     (defun mapto (id lat lng zoom name onload controls-id)
        (let* ((latlng (latlng lat lng))
               (map (make-map id latlng zoom)))
          (setf *map* map)
-         ((@ google maps event add-listener) map "dragend"
-          (lambda () (send-dragend)))
-         ((@ google maps event add-listener) map "zoom_changed"
-          (lambda ()
-            (let ((center ((@ *map* get-center))))
-              (request "handle-map-zoom-changed"
-                       (create :bounds (map-bounds) :zoom ((@ *map* get-zoom)))))))
-         ((@ google maps event add-listener) map "click"
-          (lambda (event)
-            (request "handle-map-click" (create :lat (latitude (@ event lat-lng))
-                                                :lng (longitude (@ event lat-lng))))))
+         (add-listener "dragend" (lambda () (send-dragend)))
+         (add-listener "zoom_changed"
+                       (lambda ()
+                         (let ((center ((@ *map* get-center))))
+                           (request "handle-map-zoom-changed"
+                                    (create :bounds (map-bounds) :zoom ((@ *map* get-zoom)))))))
+         (add-listener "click"
+                       (lambda (event)
+                         (request "handle-map-click" (create :lat (latitude (@ event lat-lng))
+                                                             :lng (longitude (@ event lat-lng))))))
          (when onload
-           ((@ google maps event add-listener) map "tilesloaded"
-            (lambda (event) (eval onload))))))
+           (add-listener "tilesloaded" (lambda (event) (eval onload))))
+         (when controls-id
+           (add-listener "center_changed" (lambda () (update-controls controls-id))))))
+
+     (defun update-controls (id)
+       (let* ((el (get-by-id id))
+              (center ((@ *map* get-center)))
+              (lat ((@ (latitude center) to-fixed) 4))
+              (north (> lat 0))
+              (lng ((@ (longitude center) to-fixed) 4))
+              (east (> lng 0)))
+         (set-inner-html el (+ ((@ *math abs) lng) (if east "E" "W")
+                               " " ((@ *math abs) lat) (if north "N" "S")))))
 
      (defun send-dragend ()
        (let ((center ((@ *map* get-center))))
