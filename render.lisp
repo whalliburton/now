@@ -178,27 +178,28 @@
                  (finally (return (append inside (when outside (list nil)) outside))))))
     (format nil "setContents('list',~S);setupPois(~S);"
             (with-html-output-to-string (stream)
-              (:table :class "maplist"
-                      (iter (for el in sorted)
-                            (if el
-                              (destructuring-bind (inside name lat lng &optional icon) el
-                                (declare (ignore inside))
-                                (htm (:tr :class "selectable"
-                                          :onclick (format nil "selectMaplist(~S,~A,~A);"
-                                                           (cl-who:escape-string name) lat lng)
+              (:table
+               :class "maplist"
+               (iter (for el in sorted)
+                     (if el
+                       (destructuring-bind (inside name lat lng &optional icon) el
+                         (declare (ignore inside))
+                         (htm (:tr :class "selectable"
+                                   :onclick (format nil "selectMaplist(~S,~A,~A);"
+                                                    (cl-who:escape-string name) lat lng)
 
-                                          (:td (when icon
-                                                 (htm (:img :src
-                                                            (format nil "/images/v/~(~A~)/FFF" icon)))))
-                                          (:td (esc name)) (:td (fmt "~A" lat)) (:td (fmt "~A" lng)))))
+                                   (:td (when icon
+                                          (htm (:img :src
+                                                     (format nil "/images/v/~(~A~)" icon)))))
+                                   (:td (esc name)) (:td (fmt "~A" lat)) (:td (fmt "~A" lng)))))
 
-                              (htm (:tr (:td :colspan 3 (:hr))))))))
+                       (htm (:tr (:td :colspan 3 (:hr))))))))
             (json:encode-json-to-string
              (iter (for el in sorted)
                    (when el
                      (destructuring-bind (inside name lat lng &optional icon) el
                        (declare (ignore inside))
-                       (collect (list name lat lng (and icon (format nil "v/~(~A~)/000A" icon)))))))))))
+                       (collect (list name lat lng (and icon (format nil "v/~(~A~)/24/000A" icon)))))))))))
 
 (defun handle-map-click (lat lng)
   (let ((lat (parse-float lat))
