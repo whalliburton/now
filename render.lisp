@@ -48,6 +48,7 @@
               (:br) (:br)
               (render-map stream)))
         ((equal what "icons") (render-icons stream))
+        ((equal what "colors") (render-colors stream))
         (t
          (htm
           (:table

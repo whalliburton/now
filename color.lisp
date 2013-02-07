@@ -28,3 +28,27 @@
            (values (+ r (* 16 r)) (+ g (* 16 g)) (+ b (* 16 b)) (and a (+ a (* 16 a))))
            (values r g b a))))
      (error "Invalid hex color ~A." hex))))
+
+(defparameter *rgb-txt-file* (now-file "data/rgb.txt"))
+
+(defun rgb->web (r g b)
+  (let ((long (format nil "#~2,'0x~2,'0x~2,'0x"  r g b)))
+    (if (and (char= (aref long 1) (aref long 2))
+             (char= (aref long 3) (aref long 4))
+             (char= (aref long 5) (aref long 6)))
+      (format nil "#~A~A~A" (aref long 1) (aref long 3) (aref long 5))
+      long)))
+
+(defun parse-rgb-txt ()
+  (with-input-from-file (s *rgb-txt-file*)
+    (iter (for r = (read s nil))
+          (for g = (read s nil))
+          (for b = (read s nil))
+          (for name = (read-line s nil))
+          (if (null r)
+            (return colors)
+            (collect (cons (string-trim '(#\Space #\Tab) name) (rgb->web r g b)) into colors)))))
+
+(defparameter *colors* (parse-rgb-txt))
+
+
