@@ -38,24 +38,27 @@
           (:br)
           (render-node node stream t)))))
      (t
-      (if (equal what "map")
-        (htm (:span :class "button"
-                    :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "go(\"/\");"
-                    (icon :arrow-up))
-             (:br) (:br)
-             (render-map stream))
-        (htm
-         (:table
-          (:tr
-           (iter (for name in '("tag" "place" "event" "day" ("map")))
-                 (let ((template (not (consp name)))
-                       (name (if (consp name) (car name) name)))
-                   (htm (:td :class "selectable-row" :onclick (format nil "go(\"/?what=~A\");" name)
-                             (esc name) (when template (str "s"))))))))
-         (:br)
-         (:table
-          (iter (for node in (deck:search (format nil "demo:~A" (or what "tag"))))
-                (render-node node stream)))))))))
+      (cond
+        ((equal what "map")
+         (htm (:span :class "button"
+                     :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "go(\"/\");"
+                     (icon :arrow-up))
+              (:br) (:br)
+              (render-map stream)))
+        ((equal what "icons") (render-icons stream))
+        (t
+         (htm
+          (:table
+           (:tr
+            (iter (for name in '("tag" "place" "event" "day" ("map")))
+                  (let ((template (not (consp name)))
+                        (name (if (consp name) (car name) name)))
+                    (htm (:td :class "selectable-row" :onclick (format nil "go(\"/?what=~A\");" name)
+                              (esc name) (when template (str "s"))))))))
+          (:br)
+          (:table
+           (iter (for node in (deck:search (format nil "demo:~A" (or what "tag"))))
+                 (render-node node stream))))))))))
 
 (defun render-node (node stream &optional detail)
   (with-html-output (stream)

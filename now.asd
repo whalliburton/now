@@ -10,6 +10,7 @@
                (:file "color")
                (:file "vector")
                (:file "render")
+               (:file "debug")
                (:file "ical")
                (:file "events")
                (:file "yelp")
