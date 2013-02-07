@@ -210,7 +210,7 @@
                    (when el
                      (destructuring-bind (inside name lat lng &optional icon) el
                        (declare (ignore inside))
-                       (collect (list name lat lng (and icon (format nil "v/~(~A~)/24/0000/A77A" icon))
+                       (collect (list name lat lng (and icon (format nil "v/~(~A~)/24/0005/FFFF" icon))
                                       (format nil "box-~A" index))))))))))
 
 (defun handle-map-click (lat lng)
