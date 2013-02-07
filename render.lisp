@@ -2,14 +2,16 @@
 
 (defparameter *google-api-key* "AIzaSyCuSOmkr3Fckg0sV4Eps7lJfeW_f8U_fNs")
 
+(defparameter *maps-language* "en")
+
 (defmacro render-page (title &rest body)
   `(with-html-output-to-string (stream)
      (:html
       (:head
        (:title (str ,title))
        (:link :rel "stylesheet" :type "text/css" :href "/css/now.css")
-       (:script :src (format nil "https://maps.google.com/maps/api/js?key=~A&sensor=true"
-                             *google-api-key*)
+       (:script :src (format nil "https://maps.google.com/maps/api/js?key=~A&sensor=true&language=~A"
+                             *google-api-key* *maps-language*)
                 :type "text/javascript")
        (:script :src "/js/now.js" :type "text/javascript"))
      (:body :id "body"
