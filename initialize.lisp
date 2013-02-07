@@ -11,3 +11,6 @@
   (start-session)
   (build)
   (start-now))
+
+(defmethod hunchentoot:maybe-invoke-debugger ((condition usocket:timeout-error))
+  (warn "Timeout error. ~S" condition))
