@@ -104,9 +104,6 @@
          ((plusp ((@ (@ navigator user-agent) index-of) "MSIE")) :trident)
          (t :unknown)))
 
-     (defun get-by-id (id)
-       (return ((@ document get-element-by-id) id)))
-
      (defun show (id)
        (with-id (o id)
          (setf (@ o style visibility) "visible")))
@@ -126,11 +123,11 @@
 
      (defun go (url) (setf (@ window location) url))
 
-     (defun get-by-id (id)
+     (defun get-by-id (id &optional (error t))
        (let ((hit ((@ document get-element-by-id) id)))
          (if hit
            (return hit)
-           (console "ERROR: get-by-id" id))))
+           (if error (console "ERROR: get-by-id" id)))))
 
      (defvar *editor*)
 
