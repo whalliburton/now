@@ -466,13 +466,13 @@
        (add-listener "mouseout" (lambda () (unhilight-box id)) marker))
 
      (defun hilight-box (id)
-      (let ((el (get-by-id id)))
-        (setf (slot-value el 'saved-background) (@ el style background-color))
-        (set-style (el) background-color "#444")))
+       (let ((el (get-by-id id)))
+         (setf (slot-value el 'saved-background) (@ el style background-color))
+         (set-style (el) background-color "#444")))
 
      (defun unhilight-box (id)
-      (let ((el (get-by-id id)))
-        (set-style (el) background-color (slot-value el 'saved-background))))
+       (let ((el (get-by-id id)))
+         (set-style (el) background-color (slot-value el 'saved-background))))
 
      (defvar *info-window* nil)
 
