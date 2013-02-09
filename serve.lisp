@@ -19,6 +19,8 @@
                                                                   (now-file "futura.ttf"))
           ,(hunchentoot:create-static-file-dispatcher-and-handler "/fontawesome-webfont.ttf"
                                                                   (now-file "fontawesome-webfont.ttf"))
+          ,(hunchentoot:create-static-file-dispatcher-and-handler
+            "/js/iscroll.js" (now-file "data/iscroll.js"))
           ,(hunchentoot:create-prefix-dispatcher "/js/now.js" 'now-js:js-file)
           ,(hunchentoot:create-prefix-dispatcher "/images/v/" 'vector-dispatch)
           ,(hunchentoot:create-folder-dispatcher-and-handler "/images/" (now-file "images/"))

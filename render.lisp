@@ -13,7 +13,8 @@
        (:script :src (format nil "https://maps.google.com/maps/api/js?key=~A&sensor=true&language=~A"
                              *google-api-key* *maps-language*)
                 :type "text/javascript")
-       (:script :src "/js/now.js" :type "text/javascript"))
+       (:script :src "/js/now.js" :type "text/javascript")
+       (:script :src "/js/iscroll.js" :type "text/javascript"))
      (:body :id "body"
             ;; (:div :class "settings"  :style "width:32px;height:32px;"
             ;;       :onmouseover "showSettings();"
@@ -86,7 +87,7 @@
   (let ((id (random-string 3)))
     (with-html-output (stream)
       (htm
-       (:div :id id :style "width:400px;height:400px;")
+       (:div :id id :style "width:600px;height:600px;")
        (:script :type "text/javascript"
                 (fmt "mapto(~S,~A,~A,~A,~S,~S,~S);sendClientLocation();"
                      id lat lon zoom name (or onload "null") (or controls-id "null")))))))
@@ -156,8 +157,10 @@
                     (icon :map-marker)))
         (:td :style "vertical-align:top;"
              (mapto stream name lat lng zoom "sendDragend();" "controls"))
-        (:td :style "width:50px;")
-        (:td :rowspan 3 (:div :id "list")))
+        (:td :style "width:20px;")
+        (:td :style "vertical-align:top" :rowspan 3
+             (:div :style "height:600px;" :id "wrapper"
+                   (:div :id "list"))))
        (:tr (:td) (:td (:div :style "padding:20px 20px 0px 20px;" :id "controls")))
        (:tr
         (:td)
@@ -180,30 +183,31 @@
                      (collect (cons t el) into inside)
                      (collect (cons nil el) into outside)))
                  (finally (return (append inside (when outside (list nil)) outside))))))
-    (format nil "setContents('list',~S);setupPois(~S);"
+    (format nil "setContents('list',~S);startIscroll('wrapper');setupPois(~S);"
             (with-html-output-to-string (stream)
-              (:table
-               :class "maplist"
-               (iter (for el in sorted)
-                     (for index from 0)
-                     (let ((box-id (format nil "box-~A" index)))
-                      (if el
-                        (destructuring-bind (inside name lat lng &optional icon) el
-                          (declare (ignore inside))
-                          (htm (:tr :class "selectable"
-                                    :id box-id
-                                    :onclick (format nil "selectMaplist(~S,~A,~A);"
-                                                     (cl-who:escape-string name) lat lng)
-                                    :onmouseover (format nil "hilightPoi(~S);" box-id)
-                                    :onmouseout  (format nil "unhilightPoi(~S);" box-id)
-                                    (:td (when icon
-                                           (htm (:img :src
-                                                      (format nil "/images/v/~(~A~)" icon)))))
-                                    (:td (esc name))
-                                    ;; (:td (fmt "~A" lat)) (:td (fmt "~A" lng))
-                                    )))
+              (:div
+               (:table
+                :class "maplist"
+                (iter (for el in sorted)
+                      (for index from 0)
+                      (let ((box-id (format nil "box-~A" index)))
+                        (if el
+                          (destructuring-bind (inside name lat lng &optional icon) el
+                            (declare (ignore inside))
+                            (htm (:tr :class "selectable"
+                                      :id box-id
+                                      :onclick (format nil "selectMaplist(~S,~A,~A);"
+                                                       (cl-who:escape-string name) lat lng)
+                                      :onmouseover (format nil "hilightPoi(~S);" box-id)
+                                      :onmouseout  (format nil "unhilightPoi(~S);" box-id)
+                                      (:td (when icon
+                                             (htm (:img :src
+                                                        (format nil "/images/v/~(~A~)" icon)))))
+                                      (:td (esc name))
+                                      ;; (:td (fmt "~A" lat)) (:td (fmt "~A" lng))
+                                      )))
 
-                        (htm (:tr (:td :colspan 3 (:hr)))))))))
+                          (htm (:tr (:td :colspan 3 (:hr))))))))))
             (json:encode-json-to-string
              (iter (for el in sorted)
                    (for index from 0)

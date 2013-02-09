@@ -484,7 +484,10 @@
                ((@ window set-content) content)
                ((@ window set-position) (latlng lat lng))
                ((@ window open) *map*)
-               window))))))
+               window)))
+
+     (defun start-iscroll (id)
+       (new (i-scroll id (create :h-scrollbar nil :v-scrollbar nil)))))))
 
 (defun js-file () *js-file*)
 
