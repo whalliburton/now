@@ -9,6 +9,7 @@
                (:file "serve")
                (:file "color")
                (:file "vector")
+               (:file "google")
                (:file "render")
                (:file "debug")
                (:file "ical")
