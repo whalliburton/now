@@ -23,4 +23,4 @@
   :depends-on (:hunchentoot :deck-client :closure-html :alexandria :iterate :cl-who
                             :parenscript :local-time :split-sequence :chronicity
                             :drakma :cl-json :babel :anaphora :net-telent-date :fare-csv
-                            :vecto))
+                            :vecto :cl-ppcre))

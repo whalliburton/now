@@ -37,7 +37,9 @@
     (if (not (and (string= username *now-username*)
                   (string= password *now-password*)))
       (hunchentoot:require-authorization "now")
-      (render-front-page what id))))
+      (progn
+        (hunchentoot:start-session)
+        (render-front-page what id)))))
 
 (defun ajax-handler ()
   (let ((args (mapcar (lambda (el) (let ((pos (position #\= el)))
@@ -111,3 +113,67 @@
                                               do (htm (:td (fmt "&#~D;" (char-code char))))))))))
                    (:tr (:td (:img :src "/images/check-large.png" :onclick "showSettingsDialog();"
                                    :style "cursor:pointer;"))))))))
+
+(defmacro with-sessions ((session-id-var session-var) &body body)
+  `(iter (for (,session-id-var . ,session-var) in (with-mutex ((session-db-lock *now-acceptor*))
+                             (session-db *now-acceptor*)))
+         ,@body))
+
+(defun list-all-sessions ()
+  (with-sessions (nil session) (collect session)))
+
+(defun session-seconds-since-last-click (session)
+  (timestamp-difference
+   (now)
+   (universal-to-timestamp (hunchentoot::session-last-click session))))
+
+(defun session-duration (session)
+  (timestamp-difference
+   (now)
+   (universal-to-timestamp (hunchentoot::session-start session))))
+
+(defun short-user-agent-string (session)
+  (let ((user-agent (hunchentoot:session-user-agent session)))
+    (cond
+      ((scan "Firefox" user-agent) "firefox")
+      ((scan "Conkeror" user-agent) "conkeror")
+      ((scan "Chrome" user-agent) "chrome")
+      ((scan "Drakma" user-agent) "drakma")
+      ((scan "MSIE 9" user-agent) "ie9")
+      (t user-agent))))
+
+(defun list-sessions (&optional detail)
+  (if-let (sessions (list-all-sessions))
+    (print-table
+     (iter (for session in (sort sessions #'< :key #'session-seconds-since-last-click))
+           (let ((id (hunchentoot::session-id session)))
+             (collect
+                 (nconc
+                  (list
+                   id
+                   (seconds-to-duration-string (session-seconds-since-last-click session) 0)
+                   (seconds-to-duration-string (session-duration session) 0)
+                   (short-user-agent-string session)
+                   (session-remote-addr session))))
+             (when detail
+               (let ((start (universal-to-timestamp
+                             (hunchentoot::session-start session)))
+                     (last-click (universal-to-timestamp
+                                  (hunchentoot::session-last-click session))))
+                 (collect `(:subtable
+                            ("user agent" ,(session-user-agent session))
+                            ("remote addr" ,(session-remote-addr session))
+                            ("start" ,(format nil "~A  ~A"
+                                              start
+                                              (seconds-to-duration-string
+                                               (round (timestamp-difference (now) start)) 0)))
+                            ("last click" ,(format nil "~A  ~A"
+                                                   last-click
+                                                   (seconds-to-duration-string
+                                                    (round (timestamp-difference (now) last-click))
+                                                    0)))
+                            ("")))))))
+     :headings '("id" "idle time" "duration" "agent" "ip"))
+    (format t "no sessions~%")))
+
+(defalias w list-sessions)
