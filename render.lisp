@@ -135,7 +135,7 @@
         (when-let (icon (icon-from-yelp-category name))
           (icon icon)
           (str " "))
-        (esc name)))))
+        (esc (substitute #\space #\_ name))))))
 
 (defun render-children (node stream)
   (when-let (children (deck:get-children node :any-direction t))
