@@ -11,7 +11,8 @@
            (htm
             (:tr
              (iter (for (icon index) in row)
-                   (htm (:td (:img :src (format nil "/images/v/~(~A~)/~A/FFF" icon 42)))))))))))
+                   (htm (:td (:img :src (format nil "/images/v/~(~A~)/~A/FFF" icon 42)
+                                   :title icon))))))))))
 
 (defun render-colors (stream)
   (with-html-output (stream)
