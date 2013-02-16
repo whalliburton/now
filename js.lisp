@@ -139,9 +139,10 @@
                  (value (aref attributes (1+ (* 2 x)))))
              (set-att new-element name value)))
          (when body (set-inner-html new-element body))
-         (if (and (= position "beginning") (@ element first-child))
-           ((@ element insert-before) new-element (@ element first-child))
-           ((@ element append-child) new-element))
+         (cond
+           ((and (= position "beginning") (@ element first-child))
+            ((@ element insert-before) new-element (@ element first-child)))
+           (t ((@ element append-child) new-element)))
          (return new-element)))
 
      (defun is-trident ()
@@ -283,20 +284,16 @@
      (defvar *dialog*)
 
      (defun show-dialog (html)
-       (let ((body ))
-
-         (setf *dialog*
-               (add-new-child (get-by-id "body")
-                              (if *backpane* 1 "beginning")
-                              "div"
-                              (array :class "dialog-outer")
-                              (+ "<div class=\"dialog-inner\"><div class=\"dialog\">"
-                                 html "</div></div>")))
+       (let ((body (get-by-id "body")))
          (unless *backpane*
            (setf *backpane*
-                 (add-new-child (get-by-id "body")
-                                "beginning" "div"
-                                (array :class "dialog-backpane"))))))
+                 (add-new-child body nil "div"
+                                (array :class "dialog-backpane"))))
+         (setf *dialog*
+               (add-new-child body nil "div"
+                              (array :class "dialog-outer")
+                              (+ "<div class=\"dialog-inner\"><div class=\"dialog\">"
+                                 html "</div></div>")))))
 
      (defun close-dialog (&optional nobackpane)
        (when *backpane*
