@@ -1,7 +1,5 @@
 (in-package :now)
 
-(defparameter *google-api-key* "AIzaSyCuSOmkr3Fckg0sV4Eps7lJfeW_f8U_fNs")
-
 (defparameter *maps-language* "en")
 
 (defmacro render-page (title &rest body)
@@ -89,8 +87,9 @@
       (htm
        (:div :id id :style "width:600px;height:600px;")
        (:script :type "text/javascript"
-                (fmt "mapto(~S,~A,~A,~A,~S,~S,~S);sendClientLocation();"
-                     id lat lon zoom name (or onload "null") (or controls-id "null")))))))
+                (fmt "mapto(~S,~A,~A,~A,~S,~S,~S);sendClientLocation();setMapStyles(~S);"
+                     id lat lon zoom name (or onload "null") (or controls-id "null")
+                     (create-map-styles)))))))
 
 (defmethod render ((type (eql :place)) node stream detail)
   (let ((latitude (field-value node "latitude")))
@@ -152,9 +151,17 @@
       (:table
        (:tr
         (:td :style "vertical-align:top;padding:5px;"
-             (:span :class "button"
-                    :style "cursor:pointer;padding:5px 10px 5px 10px;" :onclick "centerOnMarker();"
-                    (icon :map-marker)))
+             (:table
+              (:tr (:td
+                    (:span :class "button"
+                           :style "cursor:pointer;padding:5px 10px 5px 10px;"
+                           :onclick "centerOnMarker();"
+                           (icon :map-marker))))
+              (:tr (:td :style "padding-top:10px;"
+                    (:span :class "button"
+                           :style "cursor:pointer;padding:5px 10px 5px 10px;"
+                           :onclick "request(\"show-layer-list-dialog\");"
+                           (icon :check))))))
         (:td :style "vertical-align:top;"
              (mapto stream name lat lng zoom "sendDragend();" "controls"))
         (:td :style "width:20px;")
@@ -183,7 +190,7 @@
                      (collect (cons t el) into inside)
                      (collect (cons nil el) into outside)))
                  (finally (return (append inside (when outside (list nil)) outside))))))
-    (format nil "setContents('list',~S);startIscroll('wrapper');setupPois(~S);"
+    (format nil "setContents('list',~S);startIscroll('wrapper');setupPois(~S);setMapStyles(~S);"
             (with-html-output-to-string (stream)
               (:div
                (:table
@@ -215,7 +222,8 @@
                      (destructuring-bind (inside name lat lng &optional icon) el
                        (declare (ignore inside))
                        (collect (list name lat lng (and icon (format nil "v/~(~A~)/24/0005/FFFF" icon))
-                                      (format nil "box-~A" index))))))))))
+                                      (format nil "box-~A" index)))))))
+            (create-map-styles))))
 
 (defun handle-map-click (lat lng)
   (let ((lat (parse-float lat))
@@ -295,3 +303,32 @@
 
 (defun set-client-location (lat lng)
   (format nil "moveMarker(~A,~A,'self');centerOnMarker();" lat lng))
+
+(defun show-layer-list-dialog ()
+  (format nil "showDialog(~S);startIscroll('listing');"
+          (with-html-output-to-string (stream)
+            (:div :style "background-color:black;border:1px solid gray;padding:10px;"
+             (:div :id "listing"
+                   :style "padding:20px;height:400px;"
+                   (:table
+                    (iter (for (code name) in *map-features*)
+                          (let ((selected (member code (current-map-styles))))
+                            (htm (:tr
+                                  :id code
+                                  :style "padding:10px;"
+                                  :class (if selected "selected" "selectable")
+                                  :onclick (format nil "request(\"toggle-map-feature\",{name:\"~A\"});" code)
+                                  (:td (esc name))))))))
+             (:div :style "height:20px;")
+             (:div :class "button"
+                   :onclick "closeDialog();" (esc "Done"))))))
+
+(defun toggle-map-feature (name)
+  (let* ((code (or (car (assoc name *map-features* :test #'string-equal))
+                   (error "Unknown feature ~S." name)))
+         (selected (member code (session-value 'map-styles))))
+    (if selected
+      (setf (session-value 'map-styles) (delete code (session-value 'map-styles)))
+      (pushnew code (session-value 'map-styles)))
+    (format nil "setClass(\"~A\",~S);setMapStyles(~S);" code (if selected "selectable" "selected")
+            (create-map-styles))))

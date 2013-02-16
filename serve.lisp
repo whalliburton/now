@@ -78,7 +78,11 @@
           ((string-equal command "select-maplist")
            (apply #'select-maplist (with-args :name :lat :lng)))
           ((string-equal command "set-client-location")
-           (apply #'set-client-location (with-args :lat :lng))))))))
+           (apply #'set-client-location (with-args :lat :lng)))
+          ((string-equal command "show-layer-list-dialog")
+           (show-layer-list-dialog))
+          ((string-equal command "toggle-map-feature")
+           (apply #'toggle-map-feature (with-args :name))))))))
 
 (defun add-comment (draft target-id text)
   (when (plusp (length text))

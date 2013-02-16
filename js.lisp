@@ -484,7 +484,14 @@
                window)))
 
      (defun start-iscroll (id)
-       (new (i-scroll id (create :h-scrollbar nil :v-scrollbar nil)))))))
+       (new (i-scroll id (create :h-scrollbar nil :v-scrollbar nil))))
+
+     (defun set-class (id new-class)
+       (let ((el (get-by-id id)))
+         (setf (slot-value el 'class-name) new-class)))
+
+     (defun set-map-styles (styles)
+       ((@ *map* set-options) (create :styles (eval styles)))))))
 
 (defun js-file () *js-file*)
 

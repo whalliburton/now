@@ -74,7 +74,14 @@ span.button:hover { background-color:#333; }
 
 table.maplist { border-collapse:collapse;}
 
-.maplist tr td {  padding:10px 15px 10px 15px; }
+# .maplist tr td {  padding:10px 15px 10px 15px; }
+.maplist tr td {  padding:3px 5px 3px 5px; }
 
 tr.selectable { cursor:pointer; }
 tr.selectable:hover { background-color:#333; }
+
+tr.selected { cursor:pointer;background-color:#222; }
+tr.selected:hover { background-color:#333; }
+
+div.button { display:inline-block;padding:5px 10px 5px 10px;border:1px solid gray;cursor:pointer; }
+

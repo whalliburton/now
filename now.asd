@@ -10,6 +10,7 @@
                (:file "color")
                (:file "vector")
                (:file "google")
+               (:file "maps")
                (:file "render")
                (:file "debug")
                (:file "ical")
