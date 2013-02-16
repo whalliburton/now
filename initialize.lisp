@@ -10,6 +10,7 @@
   (ensure-directories-exist (now-file "logs/"))
   (start-session)
   (build)
+  (import-missoula)
   (start-now))
 
 (defmethod hunchentoot:maybe-invoke-debugger ((condition usocket:timeout-error))
