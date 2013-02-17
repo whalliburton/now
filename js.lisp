@@ -334,13 +334,30 @@
      (defvar *roadmap* (@ google maps *map-type-id *r-o-a-d-m-a-p))
 
      (defun make-map (id center zoom)
-       (return
-         (new ((@ google maps *map)
-               (get-by-id id)
-               (create :center center
-                       :zoom zoom
-                       :map-type-id *roadmap*
-                       :street-view-control f)))))
+       (let ((ids (array)))
+         (for-in (type (@ google maps *map-type-id))
+           ((@ ids push) (slot-value (@ google maps *map-type-id) type)))
+         ((@ ids push) "OSM")
+         (let ((map
+                 (new ((@ google maps *map)
+                       (get-by-id id)
+                       (create :center center
+                               :zoom zoom
+                               :map-type-id *roadmap*
+                               :street-view-control f
+                               :map-type-control t
+                               :map-type-control-options (create :map-type-ids ids)
+                               :scale-control t)))))
+           ((@ map map-types set)
+            "OSM" (new ((@ google maps *image-map-type)
+                        (create
+                         :get-tile-url (lambda (coord zoom)
+                                         (return (+ "http://tile.openstreetmap.org/"
+                                                    zoom "/" (@ coord x) "/" (@ coord y) ".png")))
+                         :tile-size (new ((@ google maps *size) 256 256))
+                         :name "OSM"
+                         :max-zoom 18))))
+           (return map))))
 
      (defun add-listener (type fn &optional (what *map*))
        ((@ google maps event add-listener) what type fn))
