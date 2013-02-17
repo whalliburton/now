@@ -38,10 +38,15 @@
 (defparameter *default-map-styles* '(all))
 
 (defun current-map-styles ()
-  (or (session-value 'map-styles) *default-map-styles*))
+  (or (aand (session-value 'map-styles)
+            (cons '(all) it))
+      *default-map-styles*))
 
 (defun create-map-styles ()
   (let ((styles (current-map-styles)))
     (json:encode-json-to-string
      `(,(iter (for style in styles)
-              (collect `(,(cons 'feature-type style) (stylers . (((visibility . "on")))))))))))
+              (let ((off (consp style))
+                    (style (if (consp style) (car style) style)))
+                (collect `(,(cons 'feature-type style)
+                           (stylers . ((,(cons 'visibility (if off "off" "on")))))))))))))
