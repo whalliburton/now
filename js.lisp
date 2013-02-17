@@ -338,6 +338,9 @@
          (for-in (type (@ google maps *map-type-id))
            ((@ ids push) (slot-value (@ google maps *map-type-id) type)))
          ((@ ids push) "OSM")
+         ((@ ids push) "toner")
+         ((@ ids push) "terrain")
+         ((@ ids push) "watercolor")
          (let ((map
                  (new ((@ google maps *map)
                        (get-by-id id)
@@ -357,6 +360,14 @@
                          :tile-size (new ((@ google maps *size) 256 256))
                          :name "OSM"
                          :max-zoom 18))))
+           ((@ map map-types set)
+            "toner" (new ((@ google maps *stamen-map-type) "toner")))
+           ((@ map map-types set)
+            "watercolor" (new ((@ google maps *stamen-map-type) "watercolor")))
+           ;; FIXME why not work?
+           ((@ map map-types set)
+            "terrain" (new ((@ google maps *stamen-map-type) "terrain")))
+
            (return map))))
 
      (defun add-listener (type fn &optional (what *map*))

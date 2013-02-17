@@ -12,7 +12,8 @@
                              *google-api-key* *maps-language*)
                 :type "text/javascript")
        (:script :src "/js/now.js" :type "text/javascript")
-       (:script :src "/js/iscroll.js" :type "text/javascript"))
+       (:script :src "/js/iscroll.js" :type "text/javascript")
+       (:script :src "http://maps.stamen.com/js/tile.stamen.js?v1.2.1" :type "text/javascript"))
      (:body :id "body"
             ;; (:div :class "settings"  :style "width:32px;height:32px;"
             ;;       :onmouseover "showSettings();"
