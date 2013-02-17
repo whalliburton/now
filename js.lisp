@@ -339,7 +339,8 @@
                (get-by-id id)
                (create :center center
                        :zoom zoom
-                       :map-type-id *roadmap*)))))
+                       :map-type-id *roadmap*
+                       :street-view-control f)))))
 
      (defun add-listener (type fn &optional (what *map*))
        ((@ google maps event add-listener) what type fn))
