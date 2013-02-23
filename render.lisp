@@ -144,7 +144,7 @@
               (iter (for child in children)
                     (render-node child stream))))))
 
-(defparameter *initial-map-position* nil)
+(defvar *initial-map-position* nil)
 
 (defun render-map (stream)
   (destructuring-bind (name lat lng zoom) *initial-map-position*
