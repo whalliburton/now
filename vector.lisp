@@ -46,3 +46,22 @@
                                       48
                                       (or (and size (parse-integer size)) 24))
                                     fill stroke)))))))
+
+
+(defun random-float ()
+  (float (/ (random 255) 255)))
+
+(defun draw-icon ()
+  (with-canvas (:width 16 :height 16)
+    (set-gradient-fill 0 0
+                       (random-float) (random-float) (random-float) 1
+                       16 0
+                       (random-float) (random-float) (random-float) 1)
+    (rectangle 0 0 16 16)
+    (fill-path)
+    (flexi-streams:with-output-to-sequence (stream)
+      (save-png-stream stream))))
+
+(defun favicon-dispatch ()
+  (setf (hunchentoot:content-type*) "image/png")
+  (draw-icon))

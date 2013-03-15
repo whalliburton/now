@@ -30,8 +30,6 @@
 
 (defun now-css () (slurp-file (now-file "now.css")))
 
-(defun favicon-dispatch () (slurp-as-octets (now-file "icon.ico")))
-
 (hunchentoot:define-easy-handler (front-page :uri "/") (what id)
   (multiple-value-bind (username password) (hunchentoot:authorization)
     (if (not (and (string= username *now-username*)
