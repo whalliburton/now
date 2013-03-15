@@ -12,7 +12,6 @@
                              *google-api-key* *maps-language*)
                 :type "text/javascript")
        (:script :src "/js/now.js" :type "text/javascript")
-       (:script :src "/js/iscroll.js" :type "text/javascript")
        (:script :src "http://maps.stamen.com/js/tile.stamen.js?v1.2.1" :type "text/javascript"))
      (:body :id "body"
             ;; (:div :class "settings"  :style "width:32px;height:32px;"
@@ -176,7 +175,7 @@
              (:input :style "border-width:1px;border-color:#222;border-style:solid;padding:5px 10px 5px 10px;width:360px;background-color:black;color:white;" :type "text"
                      :onchange "sendNewMapLocation(this);")))))))
 
-(defparameter *local-bounds* nil)
+(defvar *local-bounds* nil)
 
 (defun set-maplist (elements)
   (let* ((sw1 (first *local-bounds*))
@@ -191,7 +190,7 @@
                      (collect (cons t el) into inside)
                      (collect (cons nil el) into outside)))
                  (finally (return (append inside (when outside (list nil)) outside))))))
-    (format nil "setContents('list',~S);startIscroll('wrapper');setupPois(~S);setMapStyles(~S);"
+    (format nil "setContents('list',~S);setupPois(~S);setMapStyles(~S);"
             (with-html-output-to-string (stream)
               (:div
                (:table
@@ -303,10 +302,11 @@
   (update-map-on-new-bounds (parse-text-bounds bounds)))
 
 (defun set-client-location (lat lng)
-  (format nil "moveMarker(~A,~A,'self');centerOnMarker();" lat lng))
+;  (format nil "moveMarker(~A,~A,'self');centerOnMarker();" lat lng)
+  )
 
 (defun show-layer-list-dialog ()
-  (format nil "showDialog(~S);startIscroll('listing');"
+  (format nil "showDialog(~S);"
           (with-html-output-to-string (stream)
             (:div :style "background-color:black;border:1px solid gray;padding:10px;"
              (:div :id "listing"
