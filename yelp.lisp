@@ -93,6 +93,7 @@
     ("french" :food)
     ("sandwiches" :food)
     ("chicken_wings" :food)
+    ("market" :food)
 
     ("medcenters" :hospital)
     ("drugstores" :medkit)
@@ -108,10 +109,11 @@
     ("nightlife" :glass)
 
     ("adultentertainment" :strikethrough)
-    ("poolhalls" :strikethrough)
+    ("poolhalls" :circle)
 
-    ("musicvenues" :music)
-))
+    ("banks" :money)
+
+    ("musicvenues" :music)))
 
 (defun icon-from-yelp-category (category)
   (or (second (assoc category *yelp-category-to-icon* :test #'string=))
