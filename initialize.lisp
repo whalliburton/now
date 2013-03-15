@@ -12,6 +12,7 @@
   (build)
   (import-missoula)
   (start-now)
+  (start-sail)
   (format t "Welcome to Now!~%"))
 
 (defmethod hunchentoot:maybe-invoke-debugger ((condition usocket:timeout-error))

@@ -2,6 +2,7 @@
   :serial t
   :components ((:static-file "now.asd")
                (:file "package")
+               (:file "rpc-sail")
                (:file "utility")
                (:file "avatars")
                (:file "icons")

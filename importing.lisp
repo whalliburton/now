@@ -30,11 +30,14 @@
             (build-yelp-place-nodes (decode-yelps yelps))))))
 
 (defmacro define-place (name lat lng &optional (zoom 15))
-  `(defun ,(symb 'import- name) ()
-     (create-templates)
-     (setf *local-bounds* ',(list (- lat 0.5) (+ lng 1.0) (+ lat 0.5) (- lng 1.0))
-           *initial-map-position* ',(list (format nil "~:(~A~)" name) lat lng zoom))
-     (import-yelp-categories)))
+  `(progn
+     (defun ,(symb 'visit- name) ()
+       (setf *local-bounds* ',(list (- lat 0.5) (+ lng 1.0) (+ lat 0.5) (- lng 1.0))
+             *initial-map-position* ',(list (format nil "~:(~A~)" name) lat lng zoom)))
+     (defun ,(symb 'import- name) ()
+       (create-templates)
+       (,(symb 'visit- name))
+       (import-yelp-categories))))
 
 (define-place gardiner 45.032837 -110.707768)
 (define-place missoula 46.870047 -113.995 13)
