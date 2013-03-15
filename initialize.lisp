@@ -10,8 +10,9 @@
   (ensure-directories-exist (now-file "logs/"))
   (start-session)
   (build)
-  (import-gardiner)
-  (start-now))
+  (import-missoula)
+  (start-now)
+  (format t "Welcome to Now!~%"))
 
 (defmethod hunchentoot:maybe-invoke-debugger ((condition usocket:timeout-error))
   (warn "Timeout error. ~S" condition))

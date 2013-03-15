@@ -1,7 +1,7 @@
 (in-package :now)
 
 (defvar *now-acceptor* nil)
-(defvar *now-port* 1234)
+(defvar *now-port* 1357)
 (defvar *now-username* "fast")
 (defvar *now-password* "track")
 
